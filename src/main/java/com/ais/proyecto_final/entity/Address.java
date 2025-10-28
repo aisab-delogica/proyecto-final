@@ -1,5 +1,6 @@
 package com.ais.proyecto_final.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,8 @@ public class Address {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    //asi no se crea un bucle infinito en el json
+    @JsonBackReference
     private Customer customer;
 
     @Column(nullable = false, length = 160)

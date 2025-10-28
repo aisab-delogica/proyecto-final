@@ -1,5 +1,6 @@
 package com.ais.proyecto_final.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,6 +30,8 @@ public class Customer {
 
     @Builder.Default
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    //evitar bucle infinito en el json
+    @JsonManagedReference
     private List<Address> addresses = new ArrayList<>();
 
     @Column(nullable = false, updatable = false)

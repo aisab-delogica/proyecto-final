@@ -1,9 +1,10 @@
 package com.ais.proyecto_final.repository;
 
-import com.ais.proyecto_final.entity.Product;
+import com.ais.proyecto_final.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface
+CustomerRepository extends JpaRepository<Customer, Long> {
 }
