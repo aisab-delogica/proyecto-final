@@ -5,116 +5,35 @@ import com.ais.proyecto_final.dto.customer.AddressRequestDTO;
 import com.ais.proyecto_final.dto.customer.AddressResponseDTO;
 import com.ais.proyecto_final.dto.customer.CustomerRequestDTO;
 import com.ais.proyecto_final.dto.customer.CustomerResponseDTO;
-import com.ais.proyecto_final.dto.product.ProductRequestDTO;
-import com.ais.proyecto_final.dto.product.ProductResponseDTO;
-import com.ais.proyecto_final.entity.Address;
-import com.ais.proyecto_final.entity.Customer;
-import com.ais.proyecto_final.entity.Product;
-import com.ais.proyecto_final.mappers.AddressMapper;
-import com.ais.proyecto_final.mappers.CustomerMapper;
-import com.ais.proyecto_final.repository.CustomerRepository;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-@Service
-@AllArgsConstructor
-public class CustomerService {
 
-    private final CustomerRepository customerRepository;
-    private final CustomerMapper customerMapper;
-    private final AddressMapper addressMapper;
-    @Transactional
-    public CustomerResponseDTO createCustomer(CustomerRequestDTO customerRequestDTO) {
-        Customer customer = customerMapper.toEntity(customerRequestDTO);
-        Customer saved = customerRepository.save(customer);
-        return customerMapper.toResponseDto(saved);
-    }
+public interface CustomerService{
 
-    @Transactional
-    public List<CustomerResponseDTO> findAllCustomers() {
-        return customerRepository.findAll()
-                .stream()
-                .map(customerMapper::toResponseDto)
-                .collect(Collectors.toList());
-    }
-    @Transactional
-    public Optional<CustomerResponseDTO> getCustomerById(Long id) {
-        return customerRepository.findById(id)
-                .map(customerMapper::toResponseDto);
-    }
+
+    public CustomerResponseDTO createCustomer(CustomerRequestDTO customerRequestDTO);
+
+
+    public List<CustomerResponseDTO> findAllCustomers();
+
+    public CustomerResponseDTO getCustomerById(Long id);
 
     // delete
-    @Transactional
-    public void deleteCustomerById(Long id) {
-        if (customerRepository.existsById(id)) {
-            customerRepository.deleteById(id);
-        } else {
-            throw new EntityNotFoundException("Cliente " + id + " no existe.");
-        }
-    }
+
+    public void deleteCustomerById(Long id);
 
     // put
-    @Transactional
-    public CustomerResponseDTO updateCustomer(Long id, CustomerRequestDTO dto) {
-        Customer existing = customerRepository.findById(id).orElse(null);
-        if (existing == null) {
-            throw new EntityNotFoundException("Cliente " + id + " no existe.");
-        }
-
-        customerMapper.updateEntityFromDto(dto, existing);
-        Customer updated = customerRepository.save(existing);
-
-        return customerMapper.toResponseDto(updated);
-    }
+    public CustomerResponseDTO updateCustomer(Long id, CustomerRequestDTO dto);
 
 
     // DIRECCIONES
 
-    @Transactional
-    public AddressResponseDTO addAddressToCustomer(Long customerId, AddressRequestDTO dto) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new EntityNotFoundException("Cliente " + customerId + " no encontrado."));
+    public AddressResponseDTO addAddressToCustomer(Long customerId, AddressRequestDTO dto);
 
-        Address address = addressMapper.toEntity(dto);
-        address.setCustomer(customer);
 
-        if (dto.isDefault()) {
-            // desmarcar anteriores
-            customer.getAddresses().forEach(a -> a.setDefault(false));
-        }
-
-        customer.getAddresses().add(address);
-        System.out.println("AAAAAAAAAAAA" + address.getCity());
-        customerRepository.save(customer);
-
-        return addressMapper.toResponseDto(address);
-    }
-
-    @Transactional
-    public AddressResponseDTO markAddressAsDefault(Long customerId, Long addressId) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new EntityNotFoundException("Cliente " + customerId + " no encontrado."));
-
-        Address updated = null;
-        for (Address a : customer.getAddresses()) {
-            boolean isDefault = a.getId().equals(addressId);
-            a.setDefault(isDefault);
-            if (isDefault) updated = a;
-        }
-
-        if (updated == null) {
-            throw new EntityNotFoundException("direccion no encontrada.");
-        }
-
-        customerRepository.save(customer);
-        return addressMapper.toResponseDto(updated);
-    }
+    public AddressResponseDTO markAddressAsDefault(Long customerId, Long addressId);
 
 
 

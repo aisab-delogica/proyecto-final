@@ -8,15 +8,15 @@ import lombok.Data;
 @Data
 public class CustomerRequestDTO {
 
-    @NotBlank
-    @Size(max = 120)
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(max = 120, message = "El nombre no puede tener más de 120 caracteres")
     private String fullName;
 
-    @NotBlank
-    @Email
-    @Size(max = 160)
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El formato del email no es valido")
+    @Size(max = 160, message = "El email no puede tener más de 160 caracteres")
     private String email;
 
-    @Size(max = 25)
+    @Size(max = 15, message = "El teléfono no puede tener más de 15 caracteres")
     private String phone;
 }

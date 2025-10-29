@@ -1,73 +1,22 @@
 package com.ais.proyecto_final.service;
 
-
 import com.ais.proyecto_final.dto.product.ProductRequestDTO;
 import com.ais.proyecto_final.dto.product.ProductResponseDTO;
-import com.ais.proyecto_final.entity.Product;
-import com.ais.proyecto_final.mappers.ProductMapper;
-import com.ais.proyecto_final.repository.ProductRepository;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-@Service
-@AllArgsConstructor
-public class ProductService {
-    private final ProductRepository productRepository;
-    private final ProductMapper productMapper;
-    @Transactional
-    public ProductResponseDTO createProduct(ProductRequestDTO productDto) {
-        Product product = productMapper.dtoToEntity(productDto);
-        Product saved = productRepository.save(product);
-        return productMapper.toResponseDto(saved);
-    }
+public interface ProductService {
 
-    @Transactional
-    public List<ProductResponseDTO> findAllProducts() {
-        return productRepository.findAll()
-                .stream()
-                .map(productMapper::toResponseDto)
-                .collect(Collectors.toList());
-    }
-    @Transactional
-    public Optional<ProductResponseDTO> getProductById(Long id) {
-        return productRepository.findById(id)
-                .map(productMapper::toResponseDto);
-    }
+    ProductResponseDTO createProduct(ProductRequestDTO productDto);
+// page
+    List<ProductResponseDTO> findAllProducts();
 
-    // delete
-    @Transactional
-    public void deleteProductById(Long id) {
-        if (productRepository.existsById(id)) {
-            productRepository.deleteById(id);
-        } else {
-            throw new EntityNotFoundException("Producto " + id + " no existe.");
-        }
-    }
+    ProductResponseDTO getProductById(Long id);
 
+    ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto);
 
-    // put
-    @Transactional
-    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto) {
-        Product existing = productRepository.findById(id).orElse(null);
-        if (existing == null) {
-            throw new EntityNotFoundException("Producto " + id + " no existe.");
-        }
-        if (!existing.getSku().equals(dto.getSku()) &&
-                productRepository.existsBySku(dto.getSku())) {
-            throw new IllegalArgumentException("SKU ya existe para otro producto");
-        }
-
-        productMapper.updateEntityFromDto(dto, existing);
-        Product updated = productRepository.save(existing);
-
-        return productMapper.toResponseDto(updated);
-    }
-
+    void deleteProductById(Long id);
 }

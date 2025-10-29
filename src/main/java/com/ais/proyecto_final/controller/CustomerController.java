@@ -21,7 +21,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping
-    public ResponseEntity<CustomerResponseDTO> createCustomer(@RequestBody CustomerRequestDTO customerRequest) {
+    public ResponseEntity<CustomerResponseDTO> createCustomer(@RequestBody @Valid CustomerRequestDTO customerRequest) {
         CustomerResponseDTO createdCustomer = customerService.createCustomer(customerRequest);
         return new ResponseEntity<>(createdCustomer, HttpStatus.CREATED);
     }
@@ -34,9 +34,7 @@ public class CustomerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponseDTO> getCustomerById(@PathVariable Long id) {
-        return customerService.getCustomerById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(customerService.getCustomerById(id));
     }
 
     // put
@@ -64,7 +62,6 @@ public class CustomerController {
         AddressResponseDTO created = customerService.addAddressToCustomer(id, dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
-
 
     //PUT /api/customers/{id}/addresses/{addressId}/default marca como predeterminada
     @PutMapping("/{id}/addresses/{addressId}/default")
