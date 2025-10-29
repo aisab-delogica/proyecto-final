@@ -3,6 +3,7 @@ package com.ais.proyecto_final.controller;
 import com.ais.proyecto_final.dto.product.ProductRequestDTO;
 import com.ais.proyecto_final.dto.product.ProductResponseDTO;
 import com.ais.proyecto_final.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +37,19 @@ public class ProductController {
     }
 
     // put
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponseDTO> updateProduct(
+            @PathVariable Long id,
+            @RequestBody @Valid ProductRequestDTO dto) {
+        ProductResponseDTO updated = productService.updateProduct(id, dto);
+        return ResponseEntity.ok(updated);
+    }
 
 
     // delete
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ProductResponseDTO> deleteProductById(@PathVariable Long id) {
+        productService.deleteProductById(id);
+        return ResponseEntity.noContent().build();
+    }
 }

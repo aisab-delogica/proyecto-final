@@ -53,4 +53,21 @@ public class ProductService {
 
 
     // put
+    @Transactional
+    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto) {
+        Product existing = productRepository.findById(id).orElse(null);
+        if (existing == null) {
+            throw new EntityNotFoundException("Producto " + id + " no existe.");
+        }
+        if (!existing.getSku().equals(dto.getSku()) &&
+                productRepository.existsBySku(dto.getSku())) {
+            throw new IllegalArgumentException("SKU ya existe para otro producto");
+        }
+
+        productMapper.updateEntityFromDto(dto, existing);
+        Product updated = productRepository.save(existing);
+
+        return productMapper.toResponseDto(updated);
+    }
+
 }
