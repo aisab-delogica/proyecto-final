@@ -4,14 +4,15 @@ import com.ais.proyecto_final.dto.customer.AddressRequestDTO;
 import com.ais.proyecto_final.dto.customer.AddressResponseDTO;
 import com.ais.proyecto_final.dto.customer.CustomerRequestDTO;
 import com.ais.proyecto_final.dto.customer.CustomerResponseDTO;
-import com.ais.proyecto_final.service.CustomerService;
+import com.ais.proyecto_final.service.customer.CustomerService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -27,8 +28,11 @@ public class CustomerController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CustomerResponseDTO>> getAllCustomers() {
-        List<CustomerResponseDTO> customers = customerService.findAllCustomers();
+    public ResponseEntity<Page<CustomerResponseDTO>> getAllCustomers(
+            @RequestParam(required = false) String email,
+            Pageable pageable) {
+
+        Page<CustomerResponseDTO> customers = customerService.findAllCustomers(email, pageable);
         return ResponseEntity.ok(customers);
     }
 

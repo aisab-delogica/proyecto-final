@@ -2,6 +2,7 @@ package com.ais.proyecto_final.handlers;
 
 import com.ais.proyecto_final.dto.error.ErrorDetailDTO;
 import com.ais.proyecto_final.dto.error.ErrorResponseDTO;
+import com.ais.proyecto_final.exceptions.DuplicateResourceException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -92,7 +93,12 @@ public class GlobalExceptionHandler {
             MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
 
         HttpStatus status = HttpStatus.BAD_REQUEST;
+
         String fieldName = ex.getName();
+        String requiredType = (ex.getRequiredType() != null) ? ex.getRequiredType().getSimpleName() : "tipo incorrecto";
+        String message = String.format("El valor '%s' no es un formato válido. Se esperaba %s.",
+                ex.getValue(),
+                requiredType);
 
         ErrorDetailDTO detail = ErrorDetailDTO.builder()
                 .field(fieldName)
@@ -114,10 +120,12 @@ public class GlobalExceptionHandler {
 
     /*
   409 Conflict DUPLICATE_RESOURCE (EJ sku YA EXISTE)
+  era mejor usar este que el IllegalStateException porque es mas especifico
    */
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponseDTO> handleConflictException(
-            IllegalArgumentException ex, HttpServletRequest request) {
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDuplicateResourceException(
+            DuplicateResourceException ex, HttpServletRequest request) {
 
         HttpStatus status = HttpStatus.CONFLICT;
 
@@ -126,7 +134,7 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .status(status.value())
                 .error(status.getReasonPhrase())
-                .code("CONFLICT")
+                .code("DUPLICATE_RESOURCE")
                 .message(ex.getMessage())
                 .build();
 

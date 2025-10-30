@@ -2,15 +2,14 @@ package com.ais.proyecto_final.controller;
 
 import com.ais.proyecto_final.dto.product.ProductRequestDTO;
 import com.ais.proyecto_final.dto.product.ProductResponseDTO;
-import com.ais.proyecto_final.service.ProductService;
-import com.ais.proyecto_final.service.ProductServiceImpl;
+import com.ais.proyecto_final.service.product.ProductService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
@@ -25,8 +24,12 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
-        List<ProductResponseDTO> products = productService.findAllProducts();
+    public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Boolean active,
+            Pageable pageable) {
+
+        Page<ProductResponseDTO> products = productService.findAllProducts(name, active, pageable);
         return ResponseEntity.ok(products);
     }
 

@@ -1,4 +1,4 @@
-package com.ais.proyecto_final.service;
+package com.ais.proyecto_final.service.customer;
 
 
 import com.ais.proyecto_final.dto.customer.AddressRequestDTO;
@@ -7,18 +7,17 @@ import com.ais.proyecto_final.dto.customer.CustomerRequestDTO;
 import com.ais.proyecto_final.dto.customer.CustomerResponseDTO;
 import com.ais.proyecto_final.entity.Address;
 import com.ais.proyecto_final.entity.Customer;
-import com.ais.proyecto_final.entity.Product;
+import com.ais.proyecto_final.exceptions.DuplicateResourceException;
 import com.ais.proyecto_final.mappers.AddressMapper;
 import com.ais.proyecto_final.mappers.CustomerMapper;
 import com.ais.proyecto_final.repository.CustomerRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -30,7 +29,7 @@ public class CustomerServiceImpl implements CustomerService{
     @Transactional
     public CustomerResponseDTO createCustomer(CustomerRequestDTO customerRequestDTO) {
         if (customerRepository.existsByEmail(customerRequestDTO.getEmail())) {
-            throw new IllegalArgumentException("El email ya está en uso.");
+            throw new DuplicateResourceException("El email ya está en uso.");
         }
 
         Customer customer = customerMapper.toEntity(customerRequestDTO);
@@ -39,12 +38,18 @@ public class CustomerServiceImpl implements CustomerService{
     }
 
     @Transactional
-    public List<CustomerResponseDTO> findAllCustomers() {
-        return customerRepository.findAll()
-                .stream()
-                .map(customerMapper::toResponseDto)
-                .collect(Collectors.toList());
+    public Page<CustomerResponseDTO> findAllCustomers(String email, Pageable pageable) {
+        Page<Customer> customersPage;
+
+        if (email != null && !email.trim().isEmpty()) {
+            customersPage = customerRepository.findByEmailContainingIgnoreCase(email, pageable);
+        } else {
+            customersPage = customerRepository.findAll(pageable);
+        }
+
+        return customersPage.map(customerMapper::toResponseDto);
     }
+
     @Transactional
     public CustomerResponseDTO getCustomerById(Long id) {
         return customerRepository.findById(id)
@@ -65,15 +70,12 @@ public class CustomerServiceImpl implements CustomerService{
     // put
     @Transactional
     public CustomerResponseDTO updateCustomer(Long id, CustomerRequestDTO dto) {
-        Customer existing = customerRepository.findById(id).orElse(null);
-
-        if (existing == null) {
-            throw new EntityNotFoundException("Cliente " + id + " no existe.");
-        }
+        Customer existing = customerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente " + id + " no existe."));
 
         if (!existing.getEmail().equals(dto.getEmail()) &&
                 customerRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("El email introducido ya está en uso.");
+            throw new DuplicateResourceException("El email introducido ya está en uso.");
         }
 
 
@@ -110,7 +112,9 @@ public class CustomerServiceImpl implements CustomerService{
     public AddressResponseDTO markAddressAsDefault(Long customerId, Long addressId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente " + customerId + " no encontrado."));
-
+        // busco la dirección entre las direcciones del cliente
+        // si no está -> lanzo excepción
+        // si está ->  la marco como default y desmarco las demas
         Address updated = null;
         for (Address address : customer.getAddresses()) {
             if (address.getId().equals(addressId)) {
@@ -124,6 +128,8 @@ public class CustomerServiceImpl implements CustomerService{
         updated.setDefault(true);
         return addressMapper.toResponseDto(updated);
     }
+
+
 
 
 

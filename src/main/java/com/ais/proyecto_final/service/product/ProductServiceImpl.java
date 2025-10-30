@@ -1,19 +1,18 @@
-package com.ais.proyecto_final.service;
+package com.ais.proyecto_final.service.product;
 
 
 import com.ais.proyecto_final.dto.product.ProductRequestDTO;
 import com.ais.proyecto_final.dto.product.ProductResponseDTO;
 import com.ais.proyecto_final.entity.Product;
+import com.ais.proyecto_final.exceptions.DuplicateResourceException;
 import com.ais.proyecto_final.mappers.ProductMapper;
 import com.ais.proyecto_final.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -23,7 +22,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponseDTO createProduct(ProductRequestDTO productDto) {
         if (productRepository.existsBySku(productDto.getSku())) {
-            throw new IllegalArgumentException("El sku " + productDto.getSku() + " ya existe.");
+            throw new DuplicateResourceException("El sku " + productDto.getSku() + " ya existe.");
         }
 
         Product product = productMapper.dtoToEntity(productDto);
@@ -31,13 +30,32 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toResponseDto(saved);
     }
 
-    @Transactional
-    public List<ProductResponseDTO> findAllProducts() {
-        return productRepository.findAll()
-                .stream()
-                .map(productMapper::toResponseDto)
-                .collect(Collectors.toList());
+
+
+@Transactional
+// ProductServiceImpl.java
+
+public Page<ProductResponseDTO> findAllProducts(String name, Boolean active, Pageable pageable) {
+
+    boolean hasNameFilter = name != null && !name.trim().isEmpty();
+    boolean hasActiveFilter = active != null;
+    Page<Product> productsPage;
+    // sin filtros
+    if (!hasNameFilter && !hasActiveFilter) {
+        productsPage = productRepository.findAll(pageable);
+    // filtro de nombre y activo
+    } else if (hasNameFilter && hasActiveFilter) {
+        productsPage = productRepository.findByNameContainingIgnoreCaseAndActive(name, active, pageable);
+    // solo filtro de nombre
+    } else if (hasNameFilter) {
+        productsPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
+// solo filtro de activo
+    } else {
+        productsPage = productRepository.findByActive(active, pageable);
     }
+
+    return productsPage.map(productMapper::toResponseDto);
+}
     @Transactional
     public ProductResponseDTO getProductById(Long id) {
         return productRepository.findById(id)
@@ -65,13 +83,13 @@ public class ProductServiceImpl implements ProductService {
     // put
     @Transactional
     public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto) {
-        Product existing = productRepository.findById(id).orElse(null);
-        if (existing == null) {
-            throw new EntityNotFoundException("Producto " + id + " no existe.");
-        }
+        // mejor que con un if (respeta la regla del optional)
+        Product existing = productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Producto " + id + " no existe."));
+
         if (!existing.getSku().equals(dto.getSku()) &&
                 productRepository.existsBySku(dto.getSku())) {
-            throw new IllegalArgumentException("SKU ya existe para otro producto");
+            throw new DuplicateResourceException("SKU ya existe para otro producto");
         }
 
         productMapper.updateEntityFromDto(dto, existing);
