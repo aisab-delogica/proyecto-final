@@ -30,8 +30,7 @@ public class Customer {
 
     @Builder.Default
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    //evitar bucle infinito en el json
-    @JsonManagedReference
+   // @JsonManagedReference NO HACE FALTA TENIENDO DTO
     private List<Address> addresses = new ArrayList<>();
 
     @Column(nullable = false, updatable = false)
@@ -50,4 +49,6 @@ public class Customer {
     void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+
 }

@@ -20,6 +20,8 @@ public interface ProductService {
 
     void deleteProductById(Long id);
 
+    //delete HARD
+     void hardDeleteProductById(Long id);
 
 
 }

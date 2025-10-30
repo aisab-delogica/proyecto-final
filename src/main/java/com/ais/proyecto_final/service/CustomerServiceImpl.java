@@ -7,6 +7,7 @@ import com.ais.proyecto_final.dto.customer.CustomerRequestDTO;
 import com.ais.proyecto_final.dto.customer.CustomerResponseDTO;
 import com.ais.proyecto_final.entity.Address;
 import com.ais.proyecto_final.entity.Customer;
+import com.ais.proyecto_final.entity.Product;
 import com.ais.proyecto_final.mappers.AddressMapper;
 import com.ais.proyecto_final.mappers.CustomerMapper;
 import com.ais.proyecto_final.repository.CustomerRepository;
@@ -65,9 +66,16 @@ public class CustomerServiceImpl implements CustomerService{
     @Transactional
     public CustomerResponseDTO updateCustomer(Long id, CustomerRequestDTO dto) {
         Customer existing = customerRepository.findById(id).orElse(null);
+
         if (existing == null) {
             throw new EntityNotFoundException("Cliente " + id + " no existe.");
         }
+
+        if (!existing.getEmail().equals(dto.getEmail()) &&
+                customerRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("El email introducido ya está en uso.");
+        }
+
 
         customerMapper.updateEntityFromDto(dto, existing);
         Customer updated = customerRepository.save(existing);
@@ -104,17 +112,16 @@ public class CustomerServiceImpl implements CustomerService{
                 .orElseThrow(() -> new EntityNotFoundException("Cliente " + customerId + " no encontrado."));
 
         Address updated = null;
-        for (Address a : customer.getAddresses()) {
-            boolean isDefault = a.getId().equals(addressId);
-            a.setDefault(isDefault);
-            if (isDefault) updated = a;
+        for (Address address : customer.getAddresses()) {
+            if (address.getId().equals(addressId)) {
+                updated = address;
+            }
+            address.setDefault(false);
         }
-
         if (updated == null) {
-            throw new EntityNotFoundException("direccion con id" + addressId + "no encontrada.");
+            throw new EntityNotFoundException("Dirección con id " + addressId + " no encontrada para el cliente " + customerId + ".");
         }
-
-        customerRepository.save(customer);
+        updated.setDefault(true);
         return addressMapper.toResponseDto(updated);
     }
 

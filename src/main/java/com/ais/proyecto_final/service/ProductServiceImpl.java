@@ -23,7 +23,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponseDTO createProduct(ProductRequestDTO productDto) {
         if (productRepository.existsBySku(productDto.getSku())) {
-            throw new IllegalArgumentException("El SKU " + productDto.getSku() + " ya existe.");
+            throw new IllegalArgumentException("El sku " + productDto.getSku() + " ya existe.");
         }
 
         Product product = productMapper.dtoToEntity(productDto);
@@ -42,17 +42,23 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDTO getProductById(Long id) {
         return productRepository.findById(id)
                 .map(productMapper::toResponseDto)
-                .orElseThrow(() -> new EntityNotFoundException("Producto " + id + " no existe."));
+                .orElseThrow(() -> new EntityNotFoundException("Producto " + id + " no existe"));
     }
 
-    // delete
+    //soft delete (logico)
     @Transactional
     public void deleteProductById(Long id) {
-        if (productRepository.existsById(id)) {
-            productRepository.deleteById(id);
-        } else {
-            throw new EntityNotFoundException("Producto " + id + " no existe.");
-        }
+        Product existing = productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Producto " + id + " no existe"));
+        existing.setActive(false);
+    }
+
+    //hard delete (fisico)
+    @Transactional
+    public void hardDeleteProductById(Long id) {
+        Product existing = productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Producto " + id + " no existe"));
+        productRepository.delete(existing);
     }
 
 

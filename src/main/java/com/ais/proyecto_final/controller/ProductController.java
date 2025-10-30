@@ -43,12 +43,21 @@ public class ProductController {
     }
 
 
-    // delete
+    //soft delete
     @DeleteMapping("/{id}")
-    public ResponseEntity<ProductResponseDTO> deleteProductById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProductById(@PathVariable Long id) {
         productService.deleteProductById(id);
         return ResponseEntity.noContent().build();
     }
+
+    //hard delete
+    @DeleteMapping("/{id}/hard")
+    public ResponseEntity<Void> hardDeleteProductById(@PathVariable Long id) {
+        productService.hardDeleteProductById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 
 
 }

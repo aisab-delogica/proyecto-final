@@ -7,8 +7,7 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring",
         imports = {Product.class, ProductRequestDTO.class},
-        builder = @Builder(disableBuilder = false),
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE) // esto por tema de active
+        builder = @Builder(disableBuilder = false))
 public interface ProductMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)

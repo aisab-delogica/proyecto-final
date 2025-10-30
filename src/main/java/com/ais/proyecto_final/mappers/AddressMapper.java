@@ -12,7 +12,7 @@ import org.mapstruct.MappingTarget;
 public interface AddressMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "customer", ignore = true) // Se asigna en el servicio
+    @Mapping(target = "customer", ignore = true) 
     Address toEntity(AddressRequestDTO dto);
 
     AddressResponseDTO toResponseDto(Address entity);

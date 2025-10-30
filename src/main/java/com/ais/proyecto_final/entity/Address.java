@@ -16,8 +16,7 @@ public class Address {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    //asi no se crea un bucle infinito en el json
-    @JsonBackReference
+   //  @JsonBackReference NO HACE FALTA TENIENDO DTO
     private Customer customer;
 
     @Column(nullable = false, length = 160)
