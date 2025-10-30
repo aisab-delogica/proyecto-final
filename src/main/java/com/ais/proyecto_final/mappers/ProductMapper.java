@@ -3,12 +3,12 @@ package com.ais.proyecto_final.mappers;
 import com.ais.proyecto_final.dto.product.ProductRequestDTO;
 import com.ais.proyecto_final.dto.product.ProductResponseDTO;
 import com.ais.proyecto_final.entity.Product;
-import org.mapstruct.Builder;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
-@Mapper(componentModel = "spring", imports = {Product.class, ProductRequestDTO.class}, builder = @Builder(disableBuilder = false))
+@Mapper(componentModel = "spring",
+        imports = {Product.class, ProductRequestDTO.class},
+        builder = @Builder(disableBuilder = false),
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE) // esto por tema de active
 public interface ProductMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)

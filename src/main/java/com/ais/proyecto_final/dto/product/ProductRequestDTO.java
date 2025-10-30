@@ -26,6 +26,5 @@ public class ProductRequestDTO {
     @PositiveOrZero(message = "El stock no puede estar por debajo de cero")
     private Integer stock;
 
-    @NotNull(message = "El estado del producto es obligatorio")
-    private boolean active = true;
+    private Boolean active;
 }

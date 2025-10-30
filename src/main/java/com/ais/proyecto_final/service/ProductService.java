@@ -19,4 +19,7 @@ public interface ProductService {
     ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto);
 
     void deleteProductById(Long id);
+
+
+
 }
