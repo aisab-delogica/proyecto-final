@@ -21,14 +21,14 @@ import java.time.LocalDate;
 public class OrderController {
     private final OrderService orderService;
 
-    // POST /api/orders crea pedido con líneas, cálculo de total y reducción de stock
+    // POST /api/orders
     @PostMapping
     public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid OrderRequestDTO orderRequest) {
         OrderResponseDTO createdOrder = orderService.createOrder(orderRequest);
         return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }
 
-    // GET /api/orders lista pedidos con filtros y paginación
+    // GET /api/orders (con filtros y paginación)
     @GetMapping
     public ResponseEntity<Page<OrderResponseDTO>> findAllOrders(
             @RequestParam(required = false) Long customerId,
@@ -41,13 +41,13 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-    // GET /api/orders/{id} detalle con líneas
+    // GET /api/orders/{id}
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDTO> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
-    // PUT /api/orders/{id}/status cambio de estado siguiendo las transiciones válidas
+    // PUT /api/orders/{id}/status
     @PutMapping("/{id}/status")
     public ResponseEntity<OrderResponseDTO> updateOrderStatus(
             @PathVariable Long id,
