@@ -1,6 +1,5 @@
 package com.ais.proyecto_final.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,5 +34,6 @@ public class Address {
     private String country;
 
     @Column(nullable = false)
-    private boolean isDefault;
+    private boolean defaultAddress;
+
 }

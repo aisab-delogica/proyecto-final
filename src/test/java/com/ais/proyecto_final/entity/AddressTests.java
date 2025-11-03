@@ -20,7 +20,7 @@ class AddressTests {
         assertEquals("City", address.getCity());
         assertEquals("12345", address.getPostalCode());
         assertEquals("Country", address.getCountry());
-        assertTrue(address.isDefault());
+        assertTrue(address.isDefaultAddress());
     }
 
     @Test
@@ -30,13 +30,13 @@ class AddressTests {
         address.setCustomer(mockCustomer);
         address.setLine1("Line 1 Set");
         address.setCity("City Set");
-        address.setDefault(false);
+        address.setDefaultAddress(false);
 
         assertEquals(2L, address.getId());
         assertEquals(mockCustomer, address.getCustomer());
         assertEquals("Line 1 Set", address.getLine1());
         assertEquals("City Set", address.getCity());
-        assertFalse(address.isDefault());
+        assertFalse(address.isDefaultAddress());
     }
 
     @Test
@@ -45,12 +45,12 @@ class AddressTests {
                 .id(3L)
                 .line1("Builder Line 1")
                 .city("Builder City")
-                .isDefault(true)
+                .defaultAddress(true)
                 .build();
 
         assertEquals(3L, address.getId());
         assertEquals("Builder Line 1", address.getLine1());
-        assertTrue(address.isDefault());
+        assertTrue(address.isDefaultAddress());
     }
 
     @Test

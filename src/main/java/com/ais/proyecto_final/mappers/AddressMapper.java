@@ -8,11 +8,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring", builder = @Builder(disableBuilder = false))
+@Mapper(componentModel = "spring", builder = @Builder())
 public interface AddressMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "customer", ignore = true) 
+    @Mapping(target = "customer", ignore = true)
     Address toEntity(AddressRequestDTO dto);
 
     AddressResponseDTO toResponseDto(Address entity);

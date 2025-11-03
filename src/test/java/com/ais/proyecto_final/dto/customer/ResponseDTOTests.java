@@ -22,7 +22,7 @@ public class ResponseDTOTests {
                 .city("City")
                 .postalCode("12345")
                 .country("Country")
-                .isDefault(true)
+                .defaultAddress(true)
                 .build();
     }
 
@@ -30,14 +30,14 @@ public class ResponseDTOTests {
     void addressResponseDTOLombokBuilderAndGettersWorks() {
         AddressResponseDTO dto = createAddress(1L, "Line 1");
         assertEquals(1L, dto.getId());
-        assertTrue(dto.isDefault());
+        assertTrue(dto.isDefaultAddress());
     }
 
     @Test
     void addressResponseDTOLombokAllArgsConstructorWorks() {
         AddressResponseDTO dto = new AddressResponseDTO(2L, "L1", "L2", "C", "PC", "CY", false);
         assertEquals(2L, dto.getId());
-        assertFalse(dto.isDefault());
+        assertFalse(dto.isDefaultAddress());
     }
 
     @Test

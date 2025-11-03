@@ -81,14 +81,14 @@ class CustomerServiceImplTest {
                 .line1("Calle Falsa 123")
                 .city("Springfield")
                 .country("USA")
-                .isDefault(true)
+                .defaultAddress(true)
                 .customer(customerEntity)
                 .build();
 
         addressResponse = new AddressResponseDTO();
         addressResponse.setId(ADDRESS_ID);
         addressResponse.setLine1("Calle Falsa 123");
-        addressResponse.setDefault(true);
+        addressResponse.setDefaultAddress(true);
     }
 
     
@@ -185,14 +185,14 @@ class CustomerServiceImplTest {
     @Test
     void addAddressToCustomer_ShouldSetDefaultTrue_AndClearOthers() {
         
-        Address existingAddress = Address.builder().id(11L).isDefault(true).customer(customerEntity).build();
+        Address existingAddress = Address.builder().id(11L).defaultAddress(true).customer(customerEntity).build();
         customerEntity.getAddresses().add(existingAddress);
 
         AddressRequestDTO newAddressRequest = new AddressRequestDTO();
         newAddressRequest.setLine1("Nueva Direccion");
-        newAddressRequest.setDefault(true); 
+        newAddressRequest.setDefaultAddress(true);
 
-        Address newAddressEntity = Address.builder().id(12L).line1("Nueva Direccion").isDefault(true).customer(customerEntity).build();
+        Address newAddressEntity = Address.builder().id(12L).line1("Nueva Direccion").defaultAddress(true).customer(customerEntity).build();
 
         when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customerEntity));
         when(addressMapper.toEntity(newAddressRequest)).thenReturn(newAddressEntity);
@@ -202,8 +202,8 @@ class CustomerServiceImplTest {
         customerService.addAddressToCustomer(CUSTOMER_ID, newAddressRequest);
 
         
-        assertTrue(newAddressEntity.isDefault()); 
-        assertFalse(existingAddress.isDefault()); 
+        assertTrue(newAddressEntity.isDefaultAddress());
+        assertFalse(existingAddress.isDefaultAddress());
         verify(customerRepository, times(1)).save(customerEntity);
     }
 
@@ -212,9 +212,9 @@ class CustomerServiceImplTest {
         
         AddressRequestDTO newAddressRequest = new AddressRequestDTO();
         newAddressRequest.setLine1("Otra Direccion");
-        newAddressRequest.setDefault(false); 
+        newAddressRequest.setDefaultAddress(false);
 
-        Address newAddressEntity = Address.builder().id(12L).line1("Otra Direccion").isDefault(false).customer(customerEntity).build();
+        Address newAddressEntity = Address.builder().id(12L).line1("Otra Direccion").defaultAddress(false).customer(customerEntity).build();
 
         when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customerEntity));
         when(addressMapper.toEntity(newAddressRequest)).thenReturn(newAddressEntity);
@@ -224,7 +224,7 @@ class CustomerServiceImplTest {
         customerService.addAddressToCustomer(CUSTOMER_ID, newAddressRequest);
 
         
-        assertFalse(newAddressEntity.isDefault()); 
+        assertFalse(newAddressEntity.isDefaultAddress());
         verify(customerRepository, times(1)).save(customerEntity);
     }
 
@@ -235,8 +235,8 @@ class CustomerServiceImplTest {
     @Test
     void markAddressAsDefault_ShouldSucceed_AndMarkNewAddress() {
         
-        Address oldDefault = Address.builder().id(11L).isDefault(true).customer(customerEntity).build();
-        Address newDefault = Address.builder().id(ADDRESS_ID).isDefault(false).customer(customerEntity).build();
+        Address oldDefault = Address.builder().id(11L).defaultAddress(true).customer(customerEntity).build();
+        Address newDefault = Address.builder().id(ADDRESS_ID).defaultAddress(false).customer(customerEntity).build();
         customerEntity.getAddresses().add(oldDefault);
         customerEntity.getAddresses().add(newDefault);
 
@@ -247,14 +247,14 @@ class CustomerServiceImplTest {
         customerService.markAddressAsDefault(CUSTOMER_ID, ADDRESS_ID);
 
         
-        assertTrue(newDefault.isDefault());
-        assertFalse(oldDefault.isDefault());
+        assertTrue(newDefault.isDefaultAddress());
+        assertFalse(oldDefault.isDefaultAddress());
     }
 
     @Test
     void markAddressAsDefault_ShouldThrowNotFound_WhenAddressIdIsNotInCustomer() {
         
-        Address existingAddress = Address.builder().id(11L).isDefault(true).customer(customerEntity).build();
+        Address existingAddress = Address.builder().id(11L).defaultAddress(true).customer(customerEntity).build();
         customerEntity.getAddresses().add(existingAddress);
 
         when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customerEntity));

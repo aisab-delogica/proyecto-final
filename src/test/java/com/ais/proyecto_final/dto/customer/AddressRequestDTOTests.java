@@ -32,7 +32,7 @@ public class AddressRequestDTOTests {
         dto.setCity("Madrid");
         dto.setPostalCode("28001");
         dto.setCountry("España");
-        dto.setDefault(true);
+        dto.setDefaultAddress(true);
         return dto;
     }
 
@@ -83,7 +83,7 @@ public class AddressRequestDTOTests {
     void whenLine2IsNullAndIsDefaultIsFalse_thenNoViolations() {
         AddressRequestDTO dto = createValidDTO();
         dto.setLine2(null);
-        dto.setDefault(false);
+        dto.setDefaultAddress(false);
         Set<ConstraintViolation<AddressRequestDTO>> violations = validator.validate(dto);
         assertTrue(violations.isEmpty());
     }
@@ -100,7 +100,7 @@ public class AddressRequestDTOTests {
         
         dto1.setCountry("Chile"); 
         assertEquals("Chile", dto1.getCountry());
-        assertTrue(dto1.isDefault());
+        assertTrue(dto1.isDefaultAddress());
 
         
         assertNotEquals(dto1, dto2); 

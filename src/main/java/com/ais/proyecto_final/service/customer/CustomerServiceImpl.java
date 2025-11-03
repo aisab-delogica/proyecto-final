@@ -96,9 +96,9 @@ public class CustomerServiceImpl implements CustomerService{
         Address address = addressMapper.toEntity(dto);
         address.setCustomer(customer);
 
-        if (dto.isDefault()) {
+        if (dto.isDefaultAddress()) {
             // desmarcar anteriores
-            customer.getAddresses().forEach(a -> a.setDefault(false));
+            customer.getAddresses().forEach(a -> a.setDefaultAddress(false));
         }
 
         customer.getAddresses().add(address);
@@ -120,12 +120,12 @@ public class CustomerServiceImpl implements CustomerService{
             if (address.getId().equals(addressId)) {
                 updated = address;
             }
-            address.setDefault(false);
+            address.setDefaultAddress(false);
         }
         if (updated == null) {
             throw new EntityNotFoundException("Dirección con id " + addressId + " no encontrada para el cliente " + customerId + ".");
         }
-        updated.setDefault(true);
+        updated.setDefaultAddress(true);
         return addressMapper.toResponseDto(updated);
     }
 
