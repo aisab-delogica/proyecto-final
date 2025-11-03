@@ -21,4 +21,5 @@ public interface ProductMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     void updateEntityFromDto(ProductRequestDTO dto, @MappingTarget Product entity);
+
 }

@@ -2,9 +2,11 @@ package com.ais.proyecto_final.dto.order;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class LineItemRequestDTO {
     @NotNull(message = "El ID del producto es obligatorio")
     @Positive(message = "El ID del producto debe ser positivo")

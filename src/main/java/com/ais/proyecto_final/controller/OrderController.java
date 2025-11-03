@@ -28,7 +28,7 @@ public class OrderController {
         return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }
 
-    // GET /api/orders (con filtros y paginación)
+    // GET /api/orders (con filtros: customerId, fromDate, toDate, status)
     @GetMapping
     public ResponseEntity<Page<OrderResponseDTO>> findAllOrders(
             @RequestParam(required = false) Long customerId,

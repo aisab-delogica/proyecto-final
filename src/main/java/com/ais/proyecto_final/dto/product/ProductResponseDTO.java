@@ -1,10 +1,12 @@
 package com.ais.proyecto_final.dto.product;
 
+import lombok.Builder;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 public class ProductResponseDTO {
     private Long id;
     private String sku;

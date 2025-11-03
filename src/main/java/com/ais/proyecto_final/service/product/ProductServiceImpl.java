@@ -5,6 +5,7 @@ import com.ais.proyecto_final.dto.product.ProductRequestDTO;
 import com.ais.proyecto_final.dto.product.ProductResponseDTO;
 import com.ais.proyecto_final.entity.Product;
 import com.ais.proyecto_final.exceptions.DuplicateResourceException;
+import com.ais.proyecto_final.exceptions.OrderBusinessException;
 import com.ais.proyecto_final.mappers.ProductMapper;
 import com.ais.proyecto_final.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,6 +14,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -33,8 +36,6 @@ public class ProductServiceImpl implements ProductService {
 
 
 @Transactional
-// ProductServiceImpl.java
-
 public Page<ProductResponseDTO> findAllProducts(String name, Boolean active, Pageable pageable) {
 
     boolean hasNameFilter = name != null && !name.trim().isEmpty();
@@ -96,6 +97,37 @@ public Page<ProductResponseDTO> findAllProducts(String name, Boolean active, Pag
         Product updated = productRepository.save(existing);
 
         return productMapper.toResponseDto(updated);
+    }
+
+
+    // orders
+
+    @Override
+    public Optional<Product> getProductEntityById(Long id) {
+        return productRepository.findById(id);
+    }
+
+    @Transactional
+    @Override
+    public void reduceStock(Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Producto " + productId + " no existe."));
+
+        if (product.getStock() < quantity) {
+            throw new OrderBusinessException("Stock insuficiente para Producto ID: " + productId);
+        }
+        product.setStock(product.getStock() - quantity);
+        productRepository.save(product);
+    }
+
+    @Transactional
+    @Override
+    public void returnStock(Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Producto " + productId + " no existe."));
+
+        product.setStock(product.getStock() + quantity);
+        productRepository.save(product);
     }
 
 

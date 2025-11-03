@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
   ]
 } */
 @Data
+@Builder
 public class OrderRequestDTO {
     @NotNull(message = "El ID del cliente es obligatorio")
     @Positive(message = "El ID del cliente debe ser positivo")

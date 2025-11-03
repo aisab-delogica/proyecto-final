@@ -1,6 +1,8 @@
 package com.ais.proyecto_final.repository;
 
 import com.ais.proyecto_final.entity.Product;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +16,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByActive(Boolean active, Pageable pageable);
 
 
+    Object existsBySkuAndIdNot(@NotBlank(message = "El sku es obligatorio") @Size(max = 40, message = "El sku no puede tener más de 40 caracteres") String sku, long l);
 }
 
 

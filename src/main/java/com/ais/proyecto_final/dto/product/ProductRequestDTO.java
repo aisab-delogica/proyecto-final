@@ -1,10 +1,12 @@
 package com.ais.proyecto_final.dto.product;
 
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
+@Builder
 public class ProductRequestDTO {
 
     @NotBlank(message = "El sku es obligatorio")

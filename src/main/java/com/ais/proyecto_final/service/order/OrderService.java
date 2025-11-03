@@ -6,7 +6,6 @@ import com.ais.proyecto_final.dto.order.OrderStatusUpdateDTO;
 import com.ais.proyecto_final.entity.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
 import java.time.LocalDate;
 
 public interface OrderService {

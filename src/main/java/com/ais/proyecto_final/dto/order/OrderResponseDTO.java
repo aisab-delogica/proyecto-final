@@ -1,6 +1,7 @@
 package com.ais.proyecto_final.dto.order;
 
-import com.ais.proyecto_final.entity.OrderStatus; // Asume que OrderStatus es un enum
+import com.ais.proyecto_final.entity.OrderStatus;
+import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ import java.util.List;
   "total": 27.00
 } */
 @Data
+@Builder
 public class OrderResponseDTO {
     private Long id;
     private LocalDateTime orderDate;

@@ -11,12 +11,14 @@ public interface OrderItemMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "order", ignore = true)
+
     @Mapping(target = "product", ignore = true)
+
     @Mapping(target = "unitPrice", ignore = true)
-    @Mapping(target = "lineTotal", ignore = true)
-    @Mapping(source = "productId", target = "productId")
+
     OrderItem toEntity(LineItemRequestDTO dto);
 
     @Mapping(source = "product.id", target = "productId")
+    @Mapping(target = "lineTotal", expression = "java(entity.getUnitPrice().multiply(java.math.BigDecimal.valueOf(entity.getQuantity())))")
     LineItemResponseDTO toResponseDto(OrderItem entity);
 }

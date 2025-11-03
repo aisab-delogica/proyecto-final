@@ -3,6 +3,7 @@ package com.ais.proyecto_final.handlers;
 import com.ais.proyecto_final.dto.error.ErrorDetailDTO;
 import com.ais.proyecto_final.dto.error.ErrorResponseDTO;
 import com.ais.proyecto_final.exceptions.DuplicateResourceException;
+import com.ais.proyecto_final.exceptions.OrderBusinessException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -135,6 +136,28 @@ public class GlobalExceptionHandler {
                 .status(status.value())
                 .error(status.getReasonPhrase())
                 .code("DUPLICATE_RESOURCE")
+                .message(ex.getMessage())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
+
+    /*
+        400 Bad Request BUSINESS_RULE_VIOLATION (EJ. STOCK INSUFICIENTE)
+    */
+    @ExceptionHandler(OrderBusinessException.class)
+    public ResponseEntity<ErrorResponseDTO> handleOrderBusinessException(
+            OrderBusinessException ex, HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .timestamp(Instant.now())
+                .path(request.getRequestURI())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .code("BUSINESS_RULE_VIOLATION")
                 .message(ex.getMessage())
                 .build();
 
