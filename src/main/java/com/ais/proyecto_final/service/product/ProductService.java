@@ -24,7 +24,5 @@ public interface ProductService {
      void hardDeleteProductById(Long id);
 
     Optional<Product> getProductEntityById(Long id);
-    void reduceStock(Long productId, Integer quantity);
-    void returnStock(Long productId, Integer quantity);
 
 }

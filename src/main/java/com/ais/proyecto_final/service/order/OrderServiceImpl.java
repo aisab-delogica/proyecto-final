@@ -12,6 +12,7 @@ import com.ais.proyecto_final.repository.CustomerRepository;
 import com.ais.proyecto_final.repository.OrderRepository;
 import com.ais.proyecto_final.repository.ProductRepository;
 import com.ais.proyecto_final.repository.OrderSpecification;
+import com.ais.proyecto_final.service.stock.StockService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -35,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final AddressRepository addressRepository;
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
+    private final StockService stockService;
 
     @Transactional
     @Override
@@ -51,16 +53,11 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Order newOrder = orderMapper.toEntity(orderRequest);
-
-        //forzar que la lista esté vacía para que
-        // el primer save no intente cascadear lineas sin order_id.
         newOrder.setItems(new ArrayList<>());
-
         newOrder.setCustomer(customer);
         newOrder.setShippingAddress(shippingAddress);
         newOrder.setStatus(OrderStatus.CREATED);
         newOrder.setOrderDate(LocalDateTime.now());
-
         newOrder.setTotal(BigDecimal.ZERO);
 
         Order persistedOrder = orderRepository.save(newOrder);
@@ -71,28 +68,18 @@ public class OrderServiceImpl implements OrderService {
             Product product = productRepository.findById(itemRequest.getProductId())
                     .orElseThrow(() -> new EntityNotFoundException("Producto " + itemRequest.getProductId() + " no encontrado."));
 
-            if (!product.isActive()) {
-                throw new OrderBusinessException("El producto '" + product.getName() + "' (ID: " + product.getId() + ") no está activo.");
-            }
-            if (product.getStock() < itemRequest.getQuantity()) {
-                throw new OrderBusinessException("Stock insuficiente para '" + product.getName() + "'. Stock actual: " + product.getStock() + ", Solicitado: " + itemRequest.getQuantity());
-            }
+            stockService.reduceStock(product.getId(), itemRequest.getQuantity());
 
             OrderItem orderItem = orderItemMapper.toEntity(itemRequest);
-
             orderItem.setOrder(persistedOrder);
-
             orderItem.setProduct(product);
             orderItem.setUnitPrice(product.getPrice());
 
             BigDecimal lineTotal = product.getPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
-
             totalOrder = totalOrder.add(lineTotal);
 
             persistedOrder.getItems().add(orderItem);
 
-            product.setStock(product.getStock() - itemRequest.getQuantity());
-            productRepository.save(product);
         }
 
         persistedOrder.setTotal(totalOrder);
@@ -159,8 +146,7 @@ public class OrderServiceImpl implements OrderService {
         for (OrderItem item : order.getItems()) {
             Product product = item.getProduct();
             if (product != null) {
-                product.setStock(product.getStock() + item.getQuantity());
-                productRepository.save(product);
+                stockService.returnStock(product.getId(), item.getQuantity());
             }
         }
     }

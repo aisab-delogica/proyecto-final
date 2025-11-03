@@ -12,8 +12,8 @@ import com.ais.proyecto_final.repository.AddressRepository;
 import com.ais.proyecto_final.repository.CustomerRepository;
 import com.ais.proyecto_final.repository.OrderRepository;
 import com.ais.proyecto_final.repository.ProductRepository;
+import com.ais.proyecto_final.service.stock.StockService; // Importar
 import jakarta.persistence.EntityNotFoundException;
-import lombok.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +39,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
+@MockitoSettings(strictness = Strictness.LENIENT) // Usamos lenient porque algunos mocks no se usan en todos los tests
 class OrderServiceImplTest {
 
     @Mock
@@ -54,6 +54,9 @@ class OrderServiceImplTest {
     private OrderMapper orderMapper;
     @Mock
     private OrderItemMapper orderItemMapper;
+
+    @Mock
+    private StockService stockService; // <-- ¡¡LA SOLUCIÓN!! Añadir este mock
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -77,12 +80,11 @@ class OrderServiceImplTest {
                 ))
                 .build();
 
+        // Mocks básicos que la mayoría de tests necesitan
         when(customerRepository.findById(1L)).thenReturn(Optional.of(testCustomer));
         when(addressRepository.findById(2L)).thenReturn(Optional.of(testAddress));
         when(productRepository.findById(10L)).thenReturn(Optional.of(testProduct));
-
         when(orderMapper.toEntity(any(OrderRequestDTO.class))).thenReturn(Order.builder().items(new ArrayList<>()).build());
-
         when(orderItemMapper.toEntity(any())).thenReturn(OrderItem.builder().build());
     }
 
@@ -98,14 +100,16 @@ class OrderServiceImplTest {
         when(orderRepository.save(any(Order.class))).thenReturn(persistedOrder);
         when(orderMapper.toResponseDto(any(Order.class))).thenReturn(OrderResponseDTO.builder().id(1L).total(new BigDecimal("1000.00")).status(OrderStatus.PAID).build());
 
+        // Simular que el stockService funciona bien
+        doNothing().when(stockService).reduceStock(10L, 1);
+
         OrderResponseDTO result = orderService.createOrder(validRequest);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
 
         verify(orderRepository, times(2)).save(any(Order.class));
-        verify(productRepository, times(1)).save(any(Product.class));
-        assertEquals(4, testProduct.getStock());
+        verify(stockService, times(1)).reduceStock(10L, 1); // Verificar que se llamó
     }
 
     @Test
@@ -134,16 +138,18 @@ class OrderServiceImplTest {
 
     @Test
     void createOrder_ShouldThrowException_ProductInactive() {
-        testProduct.setActive(false);
-        when(productRepository.findById(anyLong())).thenReturn(Optional.of(testProduct));
+        // Simular que el stockService lanza la excepción de producto inactivo
+        doThrow(new OrderBusinessException("El producto no está activo."))
+                .when(stockService).reduceStock(10L, 1);
 
         assertThrows(OrderBusinessException.class, () -> orderService.createOrder(validRequest));
     }
 
     @Test
     void createOrder_ShouldThrowException_InsufficientStock() {
-        testProduct.setStock(0);
-        when(productRepository.findById(anyLong())).thenReturn(Optional.of(testProduct));
+        // Simular que el stockService lanza la excepción de stock
+        doThrow(new OrderBusinessException("Stock insuficiente"))
+                .when(stockService).reduceStock(10L, 1);
 
         assertThrows(OrderBusinessException.class, () -> orderService.createOrder(validRequest));
     }
@@ -169,18 +175,19 @@ class OrderServiceImplTest {
         OrderItem item = OrderItem.builder().quantity(2).product(testProduct).build();
         Order existingOrder = Order.builder().id(1L).status(OrderStatus.CREATED).items(new ArrayList<>(List.of(item))).build();
 
-        int initialStock = testProduct.getStock();
         OrderStatusUpdateDTO dto = OrderStatusUpdateDTO.builder().status(OrderStatus.CANCELLED).build();
 
         when(orderRepository.findById(1L)).thenReturn(Optional.of(existingOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(existingOrder);
-
         when(orderMapper.toResponseDto(any(Order.class))).thenReturn(OrderResponseDTO.builder().status(OrderStatus.CANCELLED).build());
+
+        // Simular que el stockService funciona
+        doNothing().when(stockService).returnStock(testProduct.getId(), 2);
 
         orderService.updateOrderStatus(1L, dto);
 
-        verify(productRepository, times(1)).save(testProduct);
-        assertEquals(initialStock + 2, testProduct.getStock());
+        // Verificar que se llamó al servicio de devolución de stock
+        verify(stockService, times(1)).returnStock(testProduct.getId(), 2);
     }
 
     @Test
@@ -257,7 +264,7 @@ class OrderServiceImplTest {
 
     @Test
     void updateOrderStatus_ShouldFail_OnInvalidTransition_FromCreatedToShipped() {
-        
+
         Order existingOrder = Order.builder().id(1L).status(OrderStatus.CREATED).items(new ArrayList<>()).build();
         OrderStatusUpdateDTO newStatusDto = OrderStatusUpdateDTO.builder().status(OrderStatus.SHIPPED).build();
 
@@ -269,7 +276,7 @@ class OrderServiceImplTest {
 
     @Test
     void updateOrderStatus_ShouldFail_OnInvalidTransition_Retrograde() {
-        
+
         Order existingOrder = Order.builder().id(1L).status(OrderStatus.PAID).items(new ArrayList<>()).build();
         OrderStatusUpdateDTO newStatusDto = OrderStatusUpdateDTO.builder().status(OrderStatus.CREATED).build();
 
@@ -281,7 +288,7 @@ class OrderServiceImplTest {
 
     @Test
     void updateOrderStatus_ShouldReturnStock_WhenTransitioningToCancelled() {
-        
+
         Product mockProduct = Product.builder().id(1L).stock(3).build();
         Order existingOrder = Order.builder().id(1L).status(OrderStatus.CREATED).build();
 
@@ -293,13 +300,15 @@ class OrderServiceImplTest {
 
         when(orderRepository.findById(1L)).thenReturn(Optional.of(existingOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(existingOrder);
-        when(productRepository.save(any(Product.class))).thenReturn(mockProduct);
+
+        // Simular que el stockService funciona
+        doNothing().when(stockService).returnStock(mockProduct.getId(), 2);
+
 
         orderService.updateOrderStatus(1L, newStatusDto);
 
-        assertEquals(5, mockProduct.getStock());
-
-        verify(productRepository, times(1)).save(mockProduct);
+        // Verificar que se llamó al servicio de devolución de stock
+        verify(stockService, times(1)).returnStock(mockProduct.getId(), 2);
         verify(orderRepository, times(1)).save(existingOrder);
     }
 }

@@ -8,11 +8,13 @@ import com.ais.proyecto_final.exceptions.DuplicateResourceException;
 import com.ais.proyecto_final.exceptions.OrderBusinessException;
 import com.ais.proyecto_final.mappers.ProductMapper;
 import com.ais.proyecto_final.repository.ProductRepository;
+import com.ais.proyecto_final.repository.ProductSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -34,29 +36,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    @Transactional
+    public Page<ProductResponseDTO> findAllProducts(String name, Boolean active, Pageable pageable) {
 
-@Transactional
-public Page<ProductResponseDTO> findAllProducts(String name, Boolean active, Pageable pageable) {
+     Specification<Product> spec = ProductSpecification.nameContains(name)
+                .and(ProductSpecification.isActive(active));
 
-    boolean hasNameFilter = name != null && !name.trim().isEmpty();
-    boolean hasActiveFilter = active != null;
-    Page<Product> productsPage;
-    // sin filtros
-    if (!hasNameFilter && !hasActiveFilter) {
-        productsPage = productRepository.findAll(pageable);
-    // filtro de nombre y activo
-    } else if (hasNameFilter && hasActiveFilter) {
-        productsPage = productRepository.findByNameContainingIgnoreCaseAndActive(name, active, pageable);
-    // solo filtro de nombre
-    } else if (hasNameFilter) {
-        productsPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
-// solo filtro de activo
-    } else {
-        productsPage = productRepository.findByActive(active, pageable);
+        Page<Product> productsPage = productRepository.findAll(spec, pageable);
+
+        return productsPage.map(productMapper::toResponseDto);
     }
 
-    return productsPage.map(productMapper::toResponseDto);
-}
     @Transactional
     public ProductResponseDTO getProductById(Long id) {
         return productRepository.findById(id)
@@ -108,28 +98,7 @@ public Page<ProductResponseDTO> findAllProducts(String name, Boolean active, Pag
         return productRepository.findById(id);
     }
 
-    @Transactional
-    @Override
-    public void reduceStock(Long productId, Integer quantity) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Producto " + productId + " no existe."));
 
-        if (product.getStock() < quantity) {
-            throw new OrderBusinessException("Stock insuficiente para Producto ID: " + productId);
-        }
-        product.setStock(product.getStock() - quantity);
-        productRepository.save(product);
-    }
-
-    @Transactional
-    @Override
-    public void returnStock(Long productId, Integer quantity) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Producto " + productId + " no existe."));
-
-        product.setStock(product.getStock() + quantity);
-        productRepository.save(product);
-    }
 
 
 }
