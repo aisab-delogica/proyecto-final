@@ -70,6 +70,7 @@ public Page<ProductResponseDTO> findAllProducts(String name, Boolean active, Pag
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Producto " + id + " no existe"));
         existing.setActive(false);
+        productRepository.save(existing);
     }
 
     //hard delete (fisico)

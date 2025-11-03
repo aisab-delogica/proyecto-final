@@ -1,8 +1,14 @@
 package com.ais.proyecto_final.dto.customer;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AddressResponseDTO {
     private Long id;
     private String line1;

@@ -240,4 +240,66 @@ class OrderServiceImplTest {
         assertEquals(1, result.getTotalElements());
         assertEquals(1L, result.getContent().get(0).getId());
     }
+
+
+    @Test
+    void updateOrderStatus_ShouldFail_OnInvalidTransition_FromFinalState() {
+        Order existingOrder = Order.builder().id(1L).status(OrderStatus.SHIPPED).items(new ArrayList<>()).build();
+        OrderStatusUpdateDTO newStatusDto = OrderStatusUpdateDTO.builder().status(OrderStatus.PAID).build();
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(existingOrder));
+
+        assertThrows(OrderBusinessException.class, () -> orderService.updateOrderStatus(1L, newStatusDto));
+
+        verify(orderRepository, never()).save(any());
+    }
+
+
+    @Test
+    void updateOrderStatus_ShouldFail_OnInvalidTransition_FromCreatedToShipped() {
+        
+        Order existingOrder = Order.builder().id(1L).status(OrderStatus.CREATED).items(new ArrayList<>()).build();
+        OrderStatusUpdateDTO newStatusDto = OrderStatusUpdateDTO.builder().status(OrderStatus.SHIPPED).build();
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(existingOrder));
+
+        assertThrows(OrderBusinessException.class, () -> orderService.updateOrderStatus(1L, newStatusDto));
+    }
+
+
+    @Test
+    void updateOrderStatus_ShouldFail_OnInvalidTransition_Retrograde() {
+        
+        Order existingOrder = Order.builder().id(1L).status(OrderStatus.PAID).items(new ArrayList<>()).build();
+        OrderStatusUpdateDTO newStatusDto = OrderStatusUpdateDTO.builder().status(OrderStatus.CREATED).build();
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(existingOrder));
+
+        assertThrows(OrderBusinessException.class, () -> orderService.updateOrderStatus(1L, newStatusDto));
+    }
+
+
+    @Test
+    void updateOrderStatus_ShouldReturnStock_WhenTransitioningToCancelled() {
+        
+        Product mockProduct = Product.builder().id(1L).stock(3).build();
+        Order existingOrder = Order.builder().id(1L).status(OrderStatus.CREATED).build();
+
+        existingOrder.setItems(List.of(
+                OrderItem.builder().product(mockProduct).quantity(2).build()
+        ));
+
+        OrderStatusUpdateDTO newStatusDto = OrderStatusUpdateDTO.builder().status(OrderStatus.CANCELLED).build();
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(existingOrder));
+        when(orderRepository.save(any(Order.class))).thenReturn(existingOrder);
+        when(productRepository.save(any(Product.class))).thenReturn(mockProduct);
+
+        orderService.updateOrderStatus(1L, newStatusDto);
+
+        assertEquals(5, mockProduct.getStock());
+
+        verify(productRepository, times(1)).save(mockProduct);
+        verify(orderRepository, times(1)).save(existingOrder);
+    }
 }
