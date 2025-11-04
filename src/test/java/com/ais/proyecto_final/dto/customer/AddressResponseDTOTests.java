@@ -114,6 +114,27 @@ public class AddressResponseDTOTests {
     }
 
     @Test
+    void testEqualsAndHashCodeWithNulls() {
+        AddressResponseDTO dto1 = new AddressResponseDTO();
+        AddressResponseDTO dto2 = new AddressResponseDTO();
+
+        assertTrue(dto1.equals(dto2));
+        assertEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto1.setLine1("Test");
+        assertFalse(dto1.equals(dto2));
+        assertNotEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto2.setLine1("Test");
+        assertTrue(dto1.equals(dto2));
+        assertEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto1.setLine2("Test2");
+        assertFalse(dto1.equals(dto2));
+        assertNotEquals(dto1.hashCode(), dto2.hashCode());
+    }
+
+    @Test
     void testToString() {
         AddressResponseDTO dto = createFullDto();
         String str = dto.toString();

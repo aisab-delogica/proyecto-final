@@ -18,7 +18,7 @@ public class CustomerRequestDTO {
     @Size(max = 160, message = "El email no puede tener más de 160 caracteres")
     private String email;
 
-    @NotBlank
+    @NotBlank(message = "El teléfono es obligatorio")
     @Size(max = 15, message = "El teléfono no puede tener más de 15 caracteres")
     private String phone;
 }

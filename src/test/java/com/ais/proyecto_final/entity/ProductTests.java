@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ProductTests {
 
-    
+
     @Test
     void lombokAllArgsConstructorWorks() {
         LocalDateTime now = LocalDateTime.now();
@@ -29,16 +29,23 @@ class ProductTests {
     @Test
     void lombokNoArgsConstructorAndSettersWorks() {
         Product product = new Product();
+        LocalDateTime time = LocalDateTime.now();
+
         product.setId(2L);
         product.setSku("SKU456");
         product.setStock(50);
         product.setActive(false);
         product.setPrice(new BigDecimal("20.00"));
+        product.setCreatedAt(time);
+        product.setUpdatedAt(time);
+
 
         assertEquals(2L, product.getId());
         assertEquals("SKU456", product.getSku());
         assertEquals(50, product.getStock());
         assertFalse(product.isActive());
+        assertEquals(time, product.getCreatedAt());
+        assertEquals(time, product.getUpdatedAt());
     }
 
     @Test
@@ -63,9 +70,17 @@ class ProductTests {
         assertEquals(p1, p2);
         assertEquals(p1.hashCode(), p2.hashCode());
         assertNotEquals(p1, p3);
+        assertNotEquals(p1.hashCode(), p3.hashCode());
+
+
+        assertTrue(p1.equals(p1));
+
+        assertFalse(p1.equals(null));
+
+        assertFalse(p1.equals(new Object()));
     }
 
-    
+
     @Test
     void prePersistSetsCreatedAtAndUpdatedAt() {
         Product product = new Product();
@@ -91,5 +106,10 @@ class ProductTests {
     void toStringWorks() {
         Product product = Product.builder().id(1L).name("Test").build();
         assertNotNull(product.toString());
+    }
+
+    @Test
+    void builderToString() {
+        assertNotNull(Product.builder().toString());
     }
 }

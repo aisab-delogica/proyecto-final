@@ -91,6 +91,27 @@ public class CustomerResponseDTOTests {
     }
 
     @Test
+    void testEqualsAndHashCodeWithNulls() {
+        CustomerResponseDTO dto1 = new CustomerResponseDTO();
+        CustomerResponseDTO dto2 = new CustomerResponseDTO();
+
+        assertTrue(dto1.equals(dto2));
+        assertEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto1.setFullName("Test");
+        assertFalse(dto1.equals(dto2));
+        assertNotEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto2.setFullName("Test");
+        assertTrue(dto1.equals(dto2));
+        assertEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto1.setEmail("Test2");
+        assertFalse(dto1.equals(dto2));
+        assertNotEquals(dto1.hashCode(), dto2.hashCode());
+    }
+
+    @Test
     void testToString() {
         CustomerResponseDTO dto = createFullDTO();
         String str = dto.toString();

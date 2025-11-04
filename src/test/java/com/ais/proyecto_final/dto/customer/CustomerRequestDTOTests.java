@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +26,7 @@ public class CustomerRequestDTOTests {
         CustomerRequestDTO dto = new CustomerRequestDTO();
         dto.setFullName("Juan Pérez García");
         dto.setEmail("juan.perez@example.com");
-        dto.setPhone("123456789012345");
+        dto.setPhone("123456789");
         return dto;
     }
 
@@ -43,7 +44,8 @@ public class CustomerRequestDTOTests {
         CustomerRequestDTO dto = createValidDTO();
         dto.setFullName(" ");
         Set<ConstraintViolation<CustomerRequestDTO>> violations = validator.validate(dto);
-        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertEquals("El nombre es obligatorio", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -51,7 +53,8 @@ public class CustomerRequestDTOTests {
         CustomerRequestDTO dto = createValidDTO();
         dto.setFullName("A".repeat(121));
         Set<ConstraintViolation<CustomerRequestDTO>> violations = validator.validate(dto);
-        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertEquals("El nombre no puede tener más de 120 caracteres", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -59,7 +62,8 @@ public class CustomerRequestDTOTests {
         CustomerRequestDTO dto = createValidDTO();
         dto.setEmail("");
         Set<ConstraintViolation<CustomerRequestDTO>> violations = validator.validate(dto);
-        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertEquals("El email es obligatorio", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -67,7 +71,8 @@ public class CustomerRequestDTOTests {
         CustomerRequestDTO dto = createValidDTO();
         dto.setEmail("invalid-email");
         Set<ConstraintViolation<CustomerRequestDTO>> violations = validator.validate(dto);
-        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertEquals("El formato del email no es valido", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -75,15 +80,24 @@ public class CustomerRequestDTOTests {
         CustomerRequestDTO dto = createValidDTO();
         dto.setEmail("a".repeat(150) + "@example.com");
         Set<ConstraintViolation<CustomerRequestDTO>> violations = validator.validate(dto);
-        assertFalse(violations.isEmpty());
+
+        assertEquals(2, violations.size());
+
+        Set<String> messages = violations.stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.toSet());
+
+        assertTrue(messages.contains("El email no puede tener más de 160 caracteres"));
+        assertTrue(messages.contains("El formato del email no es valido"));
     }
 
     @Test
     void whenPhoneIsBlank_thenViolationOccurs() {
         CustomerRequestDTO dto = createValidDTO();
-        dto.setPhone(" "); // notblank
+        dto.setPhone(" ");
         Set<ConstraintViolation<CustomerRequestDTO>> violations = validator.validate(dto);
-        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertEquals("El teléfono es obligatorio", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -91,7 +105,19 @@ public class CustomerRequestDTOTests {
         CustomerRequestDTO dto = createValidDTO();
         dto.setPhone("1".repeat(16));
         Set<ConstraintViolation<CustomerRequestDTO>> violations = validator.validate(dto);
-        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertEquals("El teléfono no puede tener más de 15 caracteres", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    void whenMultipleViolations_thenAllAreFound() {
+        CustomerRequestDTO dto = new CustomerRequestDTO();
+        dto.setFullName(" ");
+        dto.setEmail("bad-email");
+        dto.setPhone("1".repeat(20));
+
+        Set<ConstraintViolation<CustomerRequestDTO>> violations = validator.validate(dto);
+        assertEquals(3, violations.size());
     }
 
 
@@ -124,15 +150,36 @@ public class CustomerRequestDTOTests {
         assertFalse(dto1.equals(null));
         assertFalse(dto1.equals(new Object()));
 
-        CustomerRequestDTO dto3_name = new CustomerRequestDTO(); dto3_name.setFullName("Diff");
+        CustomerRequestDTO dto3_name = createValidDTO(); dto3_name.setFullName("Diff");
         assertFalse(dto1.equals(dto3_name));
 
-        CustomerRequestDTO dto3_email = new CustomerRequestDTO(); dto3_email.setEmail("Diff");
+        CustomerRequestDTO dto3_email = createValidDTO(); dto3_email.setEmail("Diff");
         assertFalse(dto1.equals(dto3_email));
 
-        CustomerRequestDTO dto3_phone = new CustomerRequestDTO(); dto3_phone.setPhone("Diff");
+        CustomerRequestDTO dto3_phone = createValidDTO(); dto3_phone.setPhone("Diff");
         assertFalse(dto1.equals(dto3_phone));
 
         assertNotEquals(dto1.hashCode(), dto3_phone.hashCode());
+    }
+
+    @Test
+    void testEqualsAndHashCodeWithNulls() {
+        CustomerRequestDTO dto1 = new CustomerRequestDTO();
+        CustomerRequestDTO dto2 = new CustomerRequestDTO();
+
+        assertTrue(dto1.equals(dto2));
+        assertEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto1.setFullName("Test");
+        assertFalse(dto1.equals(dto2));
+        assertNotEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto2.setFullName("Test");
+        assertTrue(dto1.equals(dto2));
+        assertEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto1.setEmail("Test2");
+        assertFalse(dto1.equals(dto2));
+        assertNotEquals(dto1.hashCode(), dto2.hashCode());
     }
 }

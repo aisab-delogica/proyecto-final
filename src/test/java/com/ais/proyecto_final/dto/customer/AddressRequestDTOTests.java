@@ -133,4 +133,25 @@ public class AddressRequestDTOTests {
 
         assertNotEquals(dto1.hashCode(), dto3_line1.hashCode());
     }
+
+    @Test
+    void testEqualsAndHashCodeWithNulls() {
+        AddressRequestDTO dto1 = new AddressRequestDTO();
+        AddressRequestDTO dto2 = new AddressRequestDTO();
+
+        assertTrue(dto1.equals(dto2));
+        assertEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto1.setLine1("Test");
+        assertFalse(dto1.equals(dto2));
+        assertNotEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto2.setLine1("Test");
+        assertTrue(dto1.equals(dto2));
+        assertEquals(dto1.hashCode(), dto2.hashCode());
+
+        dto1.setLine2("Test2");
+        assertFalse(dto1.equals(dto2));
+        assertNotEquals(dto1.hashCode(), dto2.hashCode());
+    }
 }

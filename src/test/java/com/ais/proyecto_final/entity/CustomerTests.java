@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class CustomerTests {
 
@@ -53,6 +54,23 @@ public class CustomerTests {
     }
 
     @Test
+    void testSetters() {
+        Customer customer = new Customer();
+        LocalDateTime time = LocalDateTime.now();
+        List<Address> addresses = new ArrayList<>();
+
+        customer.setId(10L);
+        customer.setAddresses(addresses);
+        customer.setCreatedAt(time);
+        customer.setUpdatedAt(time);
+
+        assertEquals(10L, customer.getId());
+        assertEquals(addresses, customer.getAddresses());
+        assertEquals(time, customer.getCreatedAt());
+        assertEquals(time, customer.getUpdatedAt());
+    }
+
+    @Test
     void lombokAllArgsConstructorWorks() {
         LocalDateTime time = LocalDateTime.now();
         List<Address> addresses = new ArrayList<>();
@@ -70,13 +88,29 @@ public class CustomerTests {
     @Test
     void lombokEqualsAndHashCodeWorks_BasedOnId() {
         Customer customer1 = Customer.builder().id(1L).email("a@b.com").fullName("A").build();
-        Customer customer2 = Customer.builder().id(1L).email("x@y.com").fullName("X").build(); 
+        Customer customer2 = Customer.builder().id(1L).email("x@y.com").fullName("X").build();
         Customer customer3 = Customer.builder().id(2L).email("a@b.com").fullName("A").build();
+        Customer customer4 = Customer.builder().id(1L).email("a@b.com").fullName("A").build();
 
-        
+
         assertEquals(customer1, customer2);
         assertEquals(customer1.hashCode(), customer2.hashCode());
+
+
         assertNotEquals(customer1, customer3);
+        assertNotEquals(customer1.hashCode(), customer3.hashCode());
+
+
+        assertTrue(customer1.equals(customer1));
+
+
+        assertFalse(customer1.equals(null));
+
+
+        assertFalse(customer1.equals(new Object()));
+
+
+        assertEquals(customer1, customer4);
     }
 
     @Test
@@ -86,9 +120,14 @@ public class CustomerTests {
                 .fullName("Test ToString")
                 .email("to@string.com")
                 .build();
-        
-        
+
+
         assertNotNull(customer.toString());
+    }
+
+    @Test
+    void builderToString() {
+        assertNotNull(Customer.builder().toString());
     }
 
     @Test

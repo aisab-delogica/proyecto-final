@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -40,6 +42,16 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
     private final StockService stockService;
+
+
+    //Principio Abierto/Cerrado: si añades un nuevo estado o transición, modificas el map,
+    // no la lógica del método isTransitionValid
+    private static final Map<OrderStatus, Set<OrderStatus>> VALID_TRANSITIONS = Map.of(
+            OrderStatus.CREATED, Set.of(OrderStatus.PAID, OrderStatus.CANCELLED),
+            OrderStatus.PAID, Set.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED),
+            OrderStatus.SHIPPED, Set.of(),
+            OrderStatus.CANCELLED, Set.of()
+    );
 
     @Transactional
     @Override
@@ -165,15 +177,7 @@ public class OrderServiceImpl implements OrderService {
 
     private boolean isTransitionValid(OrderStatus current, OrderStatus next) {
         if (current == next) return true;
-        if (current == OrderStatus.SHIPPED || current == OrderStatus.CANCELLED) {
-            return false;
-        }
-
-        return switch (current) {
-            case CREATED -> (next == OrderStatus.PAID || next == OrderStatus.CANCELLED);
-            case PAID -> (next == OrderStatus.SHIPPED || next == OrderStatus.CANCELLED);
-            default -> false;
-        };
+        return VALID_TRANSITIONS.getOrDefault(current, Set.of()).contains(next);
     }
 
     private void returnStockToInventory(Order order) {

@@ -31,3 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
+application-dev-secrets.properties
+.env/local.properties
+.env/test.properties
+.env/dev.properties
+.env/prod.properties
+.env/application-secrets.properties
+.env
+.env.local
+.env.test
+.env.dev

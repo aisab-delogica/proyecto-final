@@ -8,11 +8,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class OrderItemTests {
 
-    
+
     private final Order mockOrder = Order.builder().id(1L).status(OrderStatus.PAID).build();
     private final Product mockProduct = Product.builder().id(1L).name("Mock Product").build();
 
-    
+
     @Test
     void lombokAllArgsConstructorWorks() {
         BigDecimal price = new BigDecimal("25.99");
@@ -30,11 +30,13 @@ class OrderItemTests {
         OrderItem item = new OrderItem();
         item.setId(2L);
         item.setOrder(mockOrder);
+        item.setProduct(mockProduct);
         item.setQuantity(10);
         item.setUnitPrice(new BigDecimal("1.00"));
 
         assertEquals(2L, item.getId());
         assertEquals(mockOrder, item.getOrder());
+        assertEquals(mockProduct, item.getProduct());
         assertEquals(10, item.getQuantity());
     }
 
@@ -59,12 +61,23 @@ class OrderItemTests {
 
         assertEquals(item1, item2);
         assertEquals(item1.hashCode(), item2.hashCode());
+
         assertNotEquals(item1, item3);
+        assertNotEquals(item1.hashCode(), item3.hashCode());
+
+        assertTrue(item1.equals(item1));
+        assertFalse(item1.equals(null));
+        assertFalse(item1.equals(new Object()));
     }
 
     @Test
     void toStringWorks() {
         OrderItem item = OrderItem.builder().id(1L).quantity(1).build();
         assertNotNull(item.toString());
+    }
+
+    @Test
+    void builderToString() {
+        assertNotNull(OrderItem.builder().toString());
     }
 }

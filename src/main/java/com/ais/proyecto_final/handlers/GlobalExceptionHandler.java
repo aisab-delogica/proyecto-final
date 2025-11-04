@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -169,7 +170,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, status);
     }
 
-// handler generíco para excepciones no controladas (internal error)
+    // handler generíco para excepciones no controladas (internal error)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleInternalServerError(
             Exception ex, HttpServletRequest request) {
@@ -205,6 +206,27 @@ public class GlobalExceptionHandler {
                 .error(status.getReasonPhrase())
                 .code("AUTHENTICATION_FAILURE")
                 .message("Credenciales inválidas o autenticación fallida.")
+                .build();
+
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
+    /*
+        403 Forbidden AUTHORIZATION_FAILURE (Ej. Rol no permitido)
+    */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAccessDeniedException(
+            AccessDeniedException ex, HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.FORBIDDEN;
+
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .timestamp(Instant.now())
+                .path(request.getRequestURI())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .code("FORBIDDEN")
+                .message("No tiene permisos suficientes para acceder a este recurso.")
                 .build();
 
         return new ResponseEntity<>(errorResponse, status);

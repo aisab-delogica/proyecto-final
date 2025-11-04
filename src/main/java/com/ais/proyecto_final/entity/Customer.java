@@ -30,7 +30,6 @@ public class Customer {
 
     @Builder.Default
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-   // @JsonManagedReference NO HACE FALTA TENIENDO DTO
     private List<Address> addresses = new ArrayList<>();
 
     @Column(nullable = false, updatable = false)
@@ -50,5 +49,16 @@ public class Customer {
         updatedAt = LocalDateTime.now();
     }
 
-
+    public Address setDefaultAddress(Long addressId) {
+        Address newDefault = null;
+        for (Address addr : this.addresses) {
+            if (addr.getId().equals(addressId)) {
+                addr.setDefaultAddress(true);
+                newDefault = addr;
+            } else {
+                addr.setDefaultAddress(false);
+            }
+        }
+        return newDefault;
+    }
 }

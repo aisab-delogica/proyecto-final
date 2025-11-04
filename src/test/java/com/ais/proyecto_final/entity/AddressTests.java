@@ -8,7 +8,7 @@ class AddressTests {
 
     private final Customer mockCustomer = Customer.builder().id(1L).fullName("Mock").email("mock@test.com").build();
 
-    
+
     @Test
     void lombokAllArgsConstructorWorks() {
         Address address = new Address(1L, mockCustomer, "Line 1", "Line 2", "City", "12345", "Country", true);
@@ -29,13 +29,19 @@ class AddressTests {
         address.setId(2L);
         address.setCustomer(mockCustomer);
         address.setLine1("Line 1 Set");
+        address.setLine2("Line 2 Set");
         address.setCity("City Set");
+        address.setPostalCode("54321");
+        address.setCountry("Country Set");
         address.setDefaultAddress(false);
 
         assertEquals(2L, address.getId());
         assertEquals(mockCustomer, address.getCustomer());
         assertEquals("Line 1 Set", address.getLine1());
+        assertEquals("Line 2 Set", address.getLine2());
         assertEquals("City Set", address.getCity());
+        assertEquals("54321", address.getPostalCode());
+        assertEquals("Country Set", address.getCountry());
         assertFalse(address.isDefaultAddress());
     }
 
@@ -61,12 +67,23 @@ class AddressTests {
 
         assertEquals(address1, address2);
         assertEquals(address1.hashCode(), address2.hashCode());
+
         assertNotEquals(address1, address3);
+        assertNotEquals(address1.hashCode(), address3.hashCode());
+
+        assertTrue(address1.equals(address1));
+        assertFalse(address1.equals(null));
+        assertFalse(address1.equals(new Object()));
     }
 
     @Test
     void toStringWorks() {
         Address address = Address.builder().id(1L).line1("Test").build();
         assertNotNull(address.toString());
+    }
+
+    @Test
+    void builderToString() {
+        assertNotNull(Address.builder().toString());
     }
 }

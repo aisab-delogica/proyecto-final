@@ -17,15 +17,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import com.ais.proyecto_final.repository.CustomerRepository;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
@@ -77,7 +70,6 @@ public class CustomerServiceImpl implements CustomerService{
                 });
     }
 
-    // delete
     @Transactional
     public void deleteCustomerById(Long id) {
         log.info("Borrando cliente con ID: {}", id);
@@ -89,7 +81,6 @@ public class CustomerServiceImpl implements CustomerService{
             throw new EntityNotFoundException("Cliente " + id + " no existe.");
         }
     }
-    // put
     @Transactional
     public CustomerResponseDTO updateCustomer(Long id, CustomerRequestDTO dto) {
         log.info("Actualizando cliente con id: {}", id);
@@ -109,9 +100,6 @@ public class CustomerServiceImpl implements CustomerService{
         return customerMapper.toResponseDto(updated);
     }
 
-
-    // DIRECCIONES
-
     @Transactional
     public AddressResponseDTO addAddressToCustomer(Long customerId, AddressRequestDTO dto) {
         log.info("Añadiendo dirección a cliente id: {}", customerId);
@@ -125,7 +113,6 @@ public class CustomerServiceImpl implements CustomerService{
 
         if (dto.isDefaultAddress()) {
             log.info("Nueva dirección marcada como default. Desmarcando el resto para el cliente: {}", customerId);
-            // desmarcar anteriores
             customer.getAddresses().forEach(a -> a.setDefaultAddress(false));
         }
 
@@ -143,28 +130,16 @@ public class CustomerServiceImpl implements CustomerService{
                 .orElseThrow(() -> {
                     log.warn("Fallo al marcar dirección por defecto, no se encuentra cliente con id {}", customerId);
                     return new EntityNotFoundException("Cliente " + customerId + " no encontrado.");
-                });        // busco la dirección entre las direcciones del cliente
-        // si no está -> lanzo excepción
-        // si está ->  la marco como default y desmarco las demas
-        Address updated = null;
-        for (Address address : customer.getAddresses()) {
-            if (address.getId().equals(addressId)) {
-                updated = address;
-            }
-            address.setDefaultAddress(false);
-        }
-        if (updated == null) {
+                });
+
+        Address updatedAddress = customer.setDefaultAddress(addressId);
+
+        if (updatedAddress == null) {
             log.warn("Fallo al marcar dirección con id {} por defecto, no se encuentra esa dirección en el cliente ID: {}", addressId, customerId);
             throw new EntityNotFoundException("Dirección con id " + addressId + " no encontrada para el cliente " + customerId + ".");
         }
-        updated.setDefaultAddress(true);
+
         log.info("Marcada dirección id: {} por defecto para customer id: {}", addressId, customerId);
-        return addressMapper.toResponseDto(updated);
-
+        return addressMapper.toResponseDto(updatedAddress);
     }
-
-
-
-
-
 }
