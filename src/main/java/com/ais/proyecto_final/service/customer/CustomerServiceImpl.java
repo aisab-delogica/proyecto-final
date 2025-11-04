@@ -12,8 +12,10 @@ import com.ais.proyecto_final.mappers.AddressMapper;
 import com.ais.proyecto_final.mappers.CustomerMapper;
 import com.ais.proyecto_final.repository.CustomerRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,7 +44,7 @@ public class CustomerServiceImpl implements CustomerService{
         return customerMapper.toResponseDto(saved);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<CustomerResponseDTO> findAllCustomers(String email, Pageable pageable) {
         log.info("Buscando clientes con filtro email: {}, page: {}", email, pageable.getPageNumber());
         Page<Customer> customersPage;
@@ -56,7 +58,7 @@ public class CustomerServiceImpl implements CustomerService{
         return customersPage.map(customerMapper::toResponseDto);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public CustomerResponseDTO getCustomerById(Long id) {
         log.info("Buscando cliente por ID: {}", id);
         return customerRepository.findById(id)

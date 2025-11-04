@@ -4,8 +4,7 @@ import com.ais.proyecto_final.entity.Product;
 import com.ais.proyecto_final.exceptions.OrderBusinessException;
 import com.ais.proyecto_final.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service

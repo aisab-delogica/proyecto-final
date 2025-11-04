@@ -10,7 +10,7 @@ import com.ais.proyecto_final.mappers.ProductMapper;
 import com.ais.proyecto_final.repository.ProductRepository;
 import com.ais.proyecto_final.repository.ProductSpecification;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<ProductResponseDTO> findAllProducts(String name, Boolean active, Pageable pageable) {
         log.info("Buscando productos con filtro nombre: {}, estado activo: {}, página: {}", name, active, pageable.getPageNumber());
         Specification<Product> spec = ProductSpecification.nameContains(name)
@@ -55,7 +55,7 @@ public class ProductServiceImpl implements ProductService {
         return productsPage.map(productMapper::toResponseDto);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ProductResponseDTO getProductById(Long id) {
         log.info("Buscando producto con id: {}", id);
         return productRepository.findById(id)
@@ -122,6 +122,7 @@ public class ProductServiceImpl implements ProductService {
 
     // orders
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<Product> getProductEntityById(Long id) {
         log.info("Buscando producto con ID: {}", id);

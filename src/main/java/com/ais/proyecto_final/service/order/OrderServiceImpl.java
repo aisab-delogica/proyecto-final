@@ -14,7 +14,7 @@ import com.ais.proyecto_final.repository.ProductRepository;
 import com.ais.proyecto_final.repository.OrderSpecification;
 import com.ais.proyecto_final.service.stock.StockService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,8 +83,9 @@ public class OrderServiceImpl implements OrderService {
         newOrder.setOrderDate(LocalDateTime.now());
         newOrder.setTotal(BigDecimal.ZERO);
 
-        Order persistedOrder = orderRepository.save(newOrder);
-        log.info("Pedido creado con ID: {}. Procesando los productos...", persistedOrder.getId());
+        // AQUI --> ELIMINADO EL PRIMER orderRepository.save(newOrder);
+
+        log.info("Pedido inicializado en memoria. Procesando los productos...");
 
         BigDecimal totalOrder = BigDecimal.ZERO;
 
@@ -93,35 +94,35 @@ public class OrderServiceImpl implements OrderService {
                 log.info("Procesando producto. ID del producto: {}, Cantidad: {}", itemRequest.getProductId(), itemRequest.getQuantity());
                 Product product = productRepository.findById(itemRequest.getProductId())
                         .orElseThrow(() -> {
-                            log.warn("Error en el pedido {}. No se encontró el producto con ID: {}", persistedOrder.getId(), itemRequest.getProductId());
+                            log.warn("Error en el pedido (aún no guardado). No se encontró el producto con ID: {}", itemRequest.getProductId());
                             return new EntityNotFoundException("Producto " + itemRequest.getProductId() + " no encontrado.");
                         });
 
                 stockService.reduceStock(product.getId(), itemRequest.getQuantity());
 
                 OrderItem orderItem = orderItemMapper.toEntity(itemRequest);
-                orderItem.setOrder(persistedOrder);
+                orderItem.setOrder(newOrder);
                 orderItem.setProduct(product);
                 orderItem.setUnitPrice(product.getPrice());
 
                 BigDecimal lineTotal = product.getPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
                 totalOrder = totalOrder.add(lineTotal);
 
-                persistedOrder.getItems().add(orderItem);
+                newOrder.getItems().add(orderItem);
             }
         } catch (OrderBusinessException | EntityNotFoundException e) {
-            log.warn("Deshaciendo la creación del pedido {}. Motivo: {}", persistedOrder.getId(), e.getMessage());
+            log.warn("Deshaciendo la creación del pedido (aún no guardado). Motivo: {}", e.getMessage());
             throw e;
         }
 
-        persistedOrder.setTotal(totalOrder);
-        Order savedOrder = orderRepository.save(persistedOrder);
+        newOrder.setTotal(totalOrder);
+        Order savedOrder = orderRepository.save(newOrder);
         log.info("Pedido ID: {} creado con éxito. Total: {}", savedOrder.getId(), savedOrder.getTotal());
 
         return orderMapper.toResponseDto(savedOrder);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Page<OrderResponseDTO> findAllOrders(Long customerId, LocalDate fromDate, LocalDate toDate, OrderStatus status, Pageable pageable) {
         log.info("Buscando todos los pedidos. Filtros: clienteId={}, desde={}, hasta={}, estado={}, página={}",
@@ -132,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
         return ordersPage.map(orderMapper::toResponseDto);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public OrderResponseDTO getOrderById(Long id) {
         log.info("Buscando el pedido con ID: {}", id);

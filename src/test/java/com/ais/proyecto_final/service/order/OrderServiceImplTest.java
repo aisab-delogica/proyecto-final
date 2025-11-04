@@ -111,7 +111,7 @@ class OrderServiceImplTest {
         assertNotNull(result);
         assertEquals(1L, result.getId());
 
-        verify(orderRepository, times(2)).save(any(Order.class));
+        verify(orderRepository, times(1)).save(any(Order.class));
         verify(stockService, times(1)).reduceStock(10L, 1);
     }
 
