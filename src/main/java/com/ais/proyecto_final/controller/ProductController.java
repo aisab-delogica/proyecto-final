@@ -5,6 +5,7 @@ import com.ais.proyecto_final.dto.product.ProductResponseDTO;
 import com.ais.proyecto_final.service.product.ProductService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class ProductController {
     public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Boolean active,
-            Pageable pageable) {
+            @ParameterObject Pageable pageable) {
 
         Page<ProductResponseDTO> products = productService.findAllProducts(name, active, pageable);
         return ResponseEntity.ok(products);
@@ -38,7 +39,6 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    // put
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long id, @RequestBody @Valid ProductRequestDTO dto) {
         ProductResponseDTO updated = productService.updateProduct(id, dto);
@@ -46,21 +46,15 @@ public class ProductController {
     }
 
 
-    //soft delete
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProductById(@PathVariable Long id) {
         productService.deleteProductById(id);
         return ResponseEntity.noContent().build();
     }
 
-    //hard delete
     @DeleteMapping("/{id}/hard")
     public ResponseEntity<Void> hardDeleteProductById(@PathVariable Long id) {
         productService.hardDeleteProductById(id);
         return ResponseEntity.noContent().build();
     }
-
-
-
-
 }
