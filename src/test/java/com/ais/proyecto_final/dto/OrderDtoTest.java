@@ -19,7 +19,6 @@ class OrderDtoTest {
     private final List<LineItemRequestDTO> reqItems = List.of(LineItemRequestDTO.builder().productId(1L).quantity(1).build());
     private final List<LineItemResponseDTO> resItems = List.of(LineItemResponseDTO.builder().productId(1L).build());
 
-    // --- Instancias de prueba ---
     private LineItemRequestDTO lineReq1;
     private LineItemRequestDTO lineReq2;
     private LineItemResponseDTO lineRes1;
@@ -53,7 +52,6 @@ class OrderDtoTest {
         statusUpdate2 = OrderStatusUpdateDTO.builder().status(OrderStatus.CANCELLED).build();
     }
 
-    // --- 1. LineItemRequestDTO ---
 
     @Test
     void lineItemRequestDTO_EqualsAndHashCodeContract() {
@@ -82,7 +80,7 @@ class OrderDtoTest {
         assertNotNull(LineItemRequestDTO.builder().toString());
     }
 
-    // --- 2. LineItemResponseDTO ---
+    // LineItemResponseDTO
 
     @Test
     void lineItemResponseDTO_EqualsAndHashCodeContract() {
@@ -118,7 +116,7 @@ class OrderDtoTest {
         assertNotNull(LineItemResponseDTO.builder().toString());
     }
 
-    // --- 3. OrderRequestDTO ---
+    // OrderRequestDTO
 
     @Test
     void orderRequestDTO_EqualsAndHashCodeContract() {
@@ -151,7 +149,7 @@ class OrderDtoTest {
         assertNotNull(OrderRequestDTO.builder().toString());
     }
 
-    // --- 4. OrderResponseDTO ---
+    // OrderResponseDTO
 
     @Test
     void orderResponseDTO_EqualsAndHashCodeContract() {
@@ -195,7 +193,7 @@ class OrderDtoTest {
         assertNotNull(OrderResponseDTO.builder().toString());
     }
 
-    // --- 5. OrderStatusUpdateDTO ---
+    // OrderStatusUpdateDTO
 
     @Test
     void orderStatusUpdateDTO_EqualsAndHashCodeContract() {
@@ -223,8 +221,6 @@ class OrderDtoTest {
 
     @Test
     void orderStatusUpdateDTO_NoArgsConstructor() {
-        // Este test es para cubrir el constructor vacío que necesita Jackson
-        // y que tuviste que añadir para arreglar el error 500
         OrderStatusUpdateDTO dto = new OrderStatusUpdateDTO();
         assertNotNull(dto);
         assertNull(dto.getStatus());

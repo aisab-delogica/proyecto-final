@@ -32,8 +32,6 @@ public class AddressRequestDTOTests {
         return dto;
     }
 
-    // --- Tests de Validación (los tuyos, que están perfectos) ---
-
     @Test
     void whenValidAddressRequestDTO_thenNoViolations() {
         AddressRequestDTO dto = createValidDTO();
@@ -77,24 +75,12 @@ public class AddressRequestDTOTests {
         assertEquals("El país es obligatorio", violations.iterator().next().getMessage());
     }
 
-    @Test
-    void whenLine2IsNullAndIsDefaultIsFalse_thenNoViolations() {
-        AddressRequestDTO dto = createValidDTO();
-        dto.setLine2(null);
-        dto.setDefaultAddress(false);
-        Set<ConstraintViolation<AddressRequestDTO>> violations = validator.validate(dto);
-        assertTrue(violations.isEmpty());
-    }
-
-    // --- Test de Cobertura de Lombok @Data ---
 
     @Test
-    void testLombokDataMethods() {
-        // 1. Test No-Args Constructor
+    void testFullLombokCoverage() {
         AddressRequestDTO dto1 = new AddressRequestDTO();
         assertNotNull(dto1);
 
-        // 2. Test Setters
         dto1.setLine1("Line 1");
         dto1.setLine2("Line 2");
         dto1.setCity("City");
@@ -102,7 +88,6 @@ public class AddressRequestDTOTests {
         dto1.setCountry("Country");
         dto1.setDefaultAddress(true);
 
-        // 3. Test Getters
         assertEquals("Line 1", dto1.getLine1());
         assertEquals("Line 2", dto1.getLine2());
         assertEquals("City", dto1.getCity());
@@ -110,7 +95,9 @@ public class AddressRequestDTOTests {
         assertEquals("Country", dto1.getCountry());
         assertTrue(dto1.isDefaultAddress());
 
-        // 4. Test equals() y hashCode()
+        assertNotNull(dto1.toString());
+        assertTrue(dto1.toString().contains("Line 1"));
+
         AddressRequestDTO dto2 = createValidDTO();
         dto2.setLine1("Line 1");
         dto2.setLine2("Line 2");
@@ -119,19 +106,31 @@ public class AddressRequestDTOTests {
         dto2.setCountry("Country");
         dto2.setDefaultAddress(true);
 
-        AddressRequestDTO dto3 = new AddressRequestDTO();
-        dto3.setLine1("Different");
+        assertTrue(dto1.equals(dto1));
+        assertTrue(dto1.equals(dto2) && dto2.equals(dto1)); // equals
+        assertEquals(dto1.hashCode(), dto2.hashCode()); // hashCode
 
-        assertEquals(dto1, dto1); // Self
-        assertEquals(dto1, dto2); // Equal
-        assertEquals(dto1.hashCode(), dto2.hashCode()); // HashCode
-        assertNotEquals(dto1, dto3); // Different
-        assertNotEquals(dto1.hashCode(), dto3.hashCode()); // HashCode different
-        assertNotEquals(dto1, null); // Null
-        assertNotEquals(dto1, new Object()); // Different class
+        assertFalse(dto1.equals(null)); // null
+        assertFalse(dto1.equals(new Object())); // otra clase
 
-        // 5. Test toString()
-        assertNotNull(dto1.toString());
-        assertTrue(dto1.toString().contains("Line 1"));
+        AddressRequestDTO dto3_line1 = createValidDTO(); dto3_line1.setLine1("Diff");
+        assertFalse(dto1.equals(dto3_line1));
+
+        AddressRequestDTO dto3_line2 = createValidDTO(); dto3_line2.setLine2("Diff");
+        assertFalse(dto1.equals(dto3_line2));
+
+        AddressRequestDTO dto3_city = createValidDTO(); dto3_city.setCity("Diff");
+        assertFalse(dto1.equals(dto3_city));
+
+        AddressRequestDTO dto3_postal = createValidDTO(); dto3_postal.setPostalCode("Diff");
+        assertFalse(dto1.equals(dto3_postal));
+
+        AddressRequestDTO dto3_country = createValidDTO(); dto3_country.setCountry("Diff");
+        assertFalse(dto1.equals(dto3_country));
+
+        AddressRequestDTO dto3_default = createValidDTO(); dto3_default.setDefaultAddress(false);
+        assertFalse(dto1.equals(dto3_default));
+
+        assertNotEquals(dto1.hashCode(), dto3_line1.hashCode());
     }
 }

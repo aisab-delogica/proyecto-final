@@ -67,8 +67,8 @@ class OrderRepositoryTest {
 
         o3_c2_created_today = Order.builder()
                 .customer(c2).shippingAddress(a2)
-                .orderDate(today) // Misma fecha que o2
-                .status(OrderStatus.CREATED) // Mismo estado que o1
+                .orderDate(today)
+                .status(OrderStatus.CREATED)
                 .total(BigDecimal.TEN)
                 .build();
 
@@ -89,7 +89,7 @@ class OrderRepositoryTest {
     void filterOrders_ByStatus() {
         Specification<Order> spec = OrderSpecification.filterOrders(null, null, null, OrderStatus.CREATED);
         Page<Order> result = orderRepository.findAll(spec, PageRequest.of(0, 5));
-        assertEquals(2, result.getTotalElements()); // o1 y o3
+        assertEquals(2, result.getTotalElements());
     }
 
     @Test
@@ -97,7 +97,7 @@ class OrderRepositoryTest {
         LocalDate today = LocalDate.now();
         Specification<Order> spec = OrderSpecification.filterOrders(null, today, null, null);
         Page<Order> result = orderRepository.findAll(spec, PageRequest.of(0, 5));
-        assertEquals(2, result.getTotalElements()); // o2 y o3
+        assertEquals(2, result.getTotalElements());
     }
 
     @Test
@@ -105,14 +105,14 @@ class OrderRepositoryTest {
         LocalDate yesterday = LocalDate.now().minusDays(1);
         Specification<Order> spec = OrderSpecification.filterOrders(null, null, yesterday, null);
         Page<Order> result = orderRepository.findAll(spec, PageRequest.of(0, 5));
-        assertEquals(1, result.getTotalElements()); // o1
+        assertEquals(1, result.getTotalElements());
     }
 
     @Test
     void filterOrders_ByCustomerAndStatus() {
         Specification<Order> spec = OrderSpecification.filterOrders(c1.getId(), null, null, OrderStatus.SHIPPED);
         Page<Order> result = orderRepository.findAll(spec, PageRequest.of(0, 5));
-        assertEquals(1, result.getTotalElements()); // o2
+        assertEquals(1, result.getTotalElements());
     }
 
     @Test
@@ -127,6 +127,6 @@ class OrderRepositoryTest {
         LocalDate yesterday = LocalDate.now().minusDays(1);
         Specification<Order> spec = OrderSpecification.filterOrders(c1.getId(), yesterday, yesterday, OrderStatus.CREATED);
         Page<Order> result = orderRepository.findAll(spec, PageRequest.of(0, 5));
-        assertEquals(1, result.getTotalElements()); // o1
+        assertEquals(1, result.getTotalElements());
     }
 }

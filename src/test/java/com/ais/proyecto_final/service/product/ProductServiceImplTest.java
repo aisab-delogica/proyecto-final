@@ -109,15 +109,12 @@ public class ProductServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Product> productPage = new PageImpl<>(List.of(productEntity), pageable, 1);
 
-        // Probamos que ahora llama a findAll con *cualquier* Specification
         when(productRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(productPage);
         when(productMapper.toResponseDto(any(Product.class))).thenReturn(productResponseDTO);
 
-        // Llamamos al método (con o sin filtros)
         ProductResponseDTO result = productService.findAllProducts("Test", true, pageable).getContent().get(0);
 
         assertEquals(PRODUCT_ID, result.getId());
-        // Verificamos que se llamó al método findAll con la especificación
         verify(productRepository, times(1)).findAll(any(Specification.class), eq(pageable));
     }
 

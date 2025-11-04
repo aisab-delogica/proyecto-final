@@ -54,21 +54,16 @@ class CustomerRepositoryTest {
     void findByEmailContainingIgnoreCase_ShouldReturnMatchingCustomers() {
         Pageable pageable = PageRequest.of(0, 10);
 
-        // Caso 1: Búsqueda exacta (pero mayúsculas)
         Page<Customer> resultAna = customerRepository.findByEmailContainingIgnoreCase("ANA.GARCIA", pageable);
         assertEquals(1, resultAna.getTotalElements());
         assertEquals("Ana García", resultAna.getContent().get(0).getFullName());
 
-        // Caso 2: Búsqueda parcial
         Page<Customer> resultTest = customerRepository.findByEmailContainingIgnoreCase("@test.com", pageable);
         assertEquals(2, resultTest.getTotalElements());
 
-        // Caso 3: Búsqueda parcial "an"
         Page<Customer> resultAn = customerRepository.findByEmailContainingIgnoreCase("an", pageable);
-        // CORRECCIÓN: "ana.garcia" y "juan.perez" contienen "an"
         assertEquals(2, resultAn.getTotalElements());
 
-        // Caso 4: Sin resultados
         Page<Customer> resultNone = customerRepository.findByEmailContainingIgnoreCase("xyz", pageable);
         assertEquals(0, resultNone.getTotalElements());
     }

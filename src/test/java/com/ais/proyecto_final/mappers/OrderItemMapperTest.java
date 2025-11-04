@@ -64,7 +64,7 @@ public class OrderItemMapperTest {
         OrderItem entity = OrderItem.builder()
                 .id(1L)
                 .product(mockProduct)
-                .quantity(0) // Caso borde
+                .quantity(0)
                 .unitPrice(new BigDecimal("10.50"))
                 .build();
 

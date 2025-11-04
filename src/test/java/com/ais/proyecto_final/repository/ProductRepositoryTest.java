@@ -14,11 +14,11 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest // Configura H2 en memoria, escanea @Entity y Repositories
+@DataJpaTest
 class ProductRepositoryTest {
 
     @Autowired
-    private TestEntityManager entityManager; // Utilidad para insertar datos de prueba
+    private TestEntityManager entityManager;
 
     @Autowired
     private ProductRepository productRepository;
@@ -29,7 +29,6 @@ class ProductRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // Creamos y persistimos datos de prueba
         p1_active_laptop = Product.builder()
                 .sku("SKU001")
                 .name("Laptop Gamer")
@@ -53,11 +52,11 @@ class ProductRepositoryTest {
                 .name("Monitor Curvo (Inactivo)")
                 .price(new BigDecimal("300.00"))
                 .stock(5)
-                .active(false) // Inactivo
+                .active(false)
                 .build();
         entityManager.persist(p3_inactive_monitor);
 
-        entityManager.flush(); // Sincroniza la BD
+        entityManager.flush();
     }
 
     @Test
@@ -85,7 +84,6 @@ class ProductRepositoryTest {
                 .and(ProductSpecification.isActive(null));
 
         Page<Product> resultNameO = productRepository.findAll(specNameO, PageRequest.of(0, 10));
-        // CORRECCIÓN: "Laptop", "Teclado" y "Monitor" contienen "o"
         assertEquals(3, resultNameO.getTotalElements());
 
         // Caso 3: Buscar por nombre "o" y activo=false (Debe encontrar 1)

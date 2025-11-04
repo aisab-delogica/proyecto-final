@@ -1,7 +1,6 @@
 package com.ais.proyecto_final.controller;
 
 import com.ais.proyecto_final.dto.auth.LoginRequestDTO;
-import com.ais.proyecto_final.dto.auth.LoginResponseDTO;
 import com.ais.proyecto_final.security.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,6 @@ class AuthControllerTest {
 
     @Test
     void authenticateUser_ShouldReturnToken_WhenCredentialsAreValid() throws Exception {
-        // Given
         LoginRequestDTO loginRequest = new LoginRequestDTO("admin", "password");
         Authentication authentication = mock(Authentication.class);
         String testToken = "fake-jwt-token";
@@ -49,9 +47,8 @@ class AuthControllerTest {
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
         when(tokenProvider.generateToken(authentication)).thenReturn(testToken);
 
-        // When & Then
         mockMvc.perform(post("/api/auth/login")
-                        .with(csrf()) // Necesario para POST
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
@@ -61,17 +58,15 @@ class AuthControllerTest {
 
     @Test
     void authenticateUser_ShouldReturn401_WhenCredentialsAreInvalid() throws Exception {
-        // Given
         LoginRequestDTO loginRequest = new LoginRequestDTO("admin", "wrongpassword");
 
         when(authenticationManager.authenticate(any()))
                 .thenThrow(new BadCredentialsException("Invalid credentials"));
 
-        // When & Then
         mockMvc.perform(post("/api/auth/login")
-                        .with(csrf()) // Necesario para POST
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isUnauthorized()); // Spring Security maneja BadCredentialsException como 401
+                .andExpect(status().isUnauthorized());
     }
 }

@@ -43,7 +43,6 @@ class JwtAuthenticationFilterTest {
 
     @BeforeEach
     void setUp() {
-        // Limpiamos el contexto de seguridad antes de cada test
         SecurityContextHolder.clearContext();
     }
 
@@ -54,7 +53,7 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void doFilterInternal_ShouldSetAuthentication_WhenTokenIsValid() throws ServletException, IOException {
-        // Given
+        
         String token = "valid-jwt-token";
         String username = "admin";
         UserDetails userDetails = new User(username, "password", new ArrayList<>());
@@ -64,10 +63,10 @@ class JwtAuthenticationFilterTest {
         when(tokenProvider.getUsernameFromToken(token)).thenReturn(username);
         when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
 
-        // When
+        
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then
+        
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assertNotNull(auth);
         assertTrue(auth.isAuthenticated());
@@ -77,13 +76,13 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void doFilterInternal_ShouldDoNothing_WhenTokenIsMissing() throws ServletException, IOException {
-        // Given
+        
         when(request.getHeader("Authorization")).thenReturn(null);
 
-        // When
+        
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then
+        
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assertNull(auth);
         verify(filterChain, times(1)).doFilter(request, response);
@@ -91,13 +90,13 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void doFilterInternal_ShouldDoNothing_WhenTokenHasInvalidPrefix() throws ServletException, IOException {
-        // Given
+        
         when(request.getHeader("Authorization")).thenReturn("Basic dXNlcjpwYXNz"); // "Basic user:pass"
 
-        // When
+        
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then
+        
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assertNull(auth);
         verify(filterChain, times(1)).doFilter(request, response);
@@ -105,15 +104,15 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void doFilterInternal_ShouldDoNothing_WhenTokenIsInvalid() throws ServletException, IOException {
-        // Given
+        
         String token = "invalid-jwt-token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
         when(tokenProvider.validateToken(token)).thenReturn(false);
 
-        // When
+        
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then
+        
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assertNull(auth);
         verify(filterChain, times(1)).doFilter(request, response);
@@ -121,18 +120,18 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void doFilterInternal_ShouldCatchException_WhenValidationFails() throws ServletException, IOException {
-        // Given
+        
         String token = "valid-token-but-fails";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
         when(tokenProvider.validateToken(token)).thenReturn(true);
         when(tokenProvider.getUsernameFromToken(token)).thenThrow(new RuntimeException("Test Exception"));
 
-        // When
+        
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then
+        
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assertNull(auth); // El contexto no debe establecerse si hay excepción
+        assertNull(auth);
         verify(filterChain, times(1)).doFilter(request, response);
     }
 }

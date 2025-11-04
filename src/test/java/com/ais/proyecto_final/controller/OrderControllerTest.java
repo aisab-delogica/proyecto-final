@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@WithMockUser // <-- Autentica todas las peticiones
+@WithMockUser
 class OrderControllerTest {
 
     @Autowired
@@ -66,11 +66,10 @@ class OrderControllerTest {
                 .items(List.of())
                 .build();
 
-        // El request DTO no necesita ser completo, solo para el body
         orderRequest = OrderRequestDTO.builder()
                 .customerId(1L)
                 .shippingAddressId(1L)
-                .items(List.of(validItem)) // Asumimos DTOs de items válidos
+                .items(List.of(validItem))
                 .build();
 
         statusUpdate = OrderStatusUpdateDTO.builder()
@@ -80,12 +79,12 @@ class OrderControllerTest {
 
     @Test
     void createOrder_ShouldReturn201() throws Exception {
-        // Given
+        
         when(orderService.createOrder(any(OrderRequestDTO.class))).thenReturn(orderResponse);
 
-        // When & Then
+        
         mockMvc.perform(post("/api/orders")
-                        .with(csrf()) // <-- CSRF
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(orderRequest)))
                 .andExpect(status().isCreated())
@@ -94,12 +93,12 @@ class OrderControllerTest {
 
     @Test
     void findAllOrders_ShouldReturnPage() throws Exception {
-        // Given
+        
         Page<OrderResponseDTO> responsePage = new PageImpl<>(List.of(orderResponse));
         when(orderService.findAllOrders(any(), any(), any(), any(), any(Pageable.class)))
                 .thenReturn(responsePage);
 
-        // When & Then
+        
         mockMvc.perform(get("/api/orders")
                         .param("page", "0")
                         .param("size", "5")
@@ -110,10 +109,10 @@ class OrderControllerTest {
 
     @Test
     void getOrderById_ShouldReturn200_WhenFound() throws Exception {
-        // Given
+        
         when(orderService.getOrderById(1L)).thenReturn(orderResponse);
 
-        // When & Then
+        
         mockMvc.perform(get("/api/orders/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L));
@@ -121,23 +120,23 @@ class OrderControllerTest {
 
     @Test
     void getOrderById_ShouldReturn404_WhenNotFound() throws Exception {
-        // Given
+        
         when(orderService.getOrderById(99L)).thenThrow(new EntityNotFoundException("Pedido no encontrado"));
 
-        // When & Then
+        
         mockMvc.perform(get("/api/orders/99"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void updateOrderStatus_ShouldReturn200() throws Exception {
-        // Given
-        orderResponse.setStatus(OrderStatus.PAID); // Simula la respuesta actualizada
+        
+        orderResponse.setStatus(OrderStatus.PAID);
         when(orderService.updateOrderStatus(eq(1L), any(OrderStatusUpdateDTO.class))).thenReturn(orderResponse);
 
-        // When & Then
+        
         mockMvc.perform(put("/api/orders/1/status")
-                        .with(csrf()) // <-- CSRF
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(statusUpdate)))
                 .andExpect(status().isOk())

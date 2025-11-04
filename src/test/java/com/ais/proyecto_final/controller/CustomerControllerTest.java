@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@WithMockUser // <-- Autentica todas las peticiones
+@WithMockUser
 class CustomerControllerTest {
 
     @Autowired
@@ -79,12 +79,12 @@ class CustomerControllerTest {
 
     @Test
     void createCustomer_ShouldReturn201() throws Exception {
-        // Given
+        
         when(customerService.createCustomer(any(CustomerRequestDTO.class))).thenReturn(customerResponse);
 
-        // When & Then
+        
         mockMvc.perform(post("/api/customers")
-                        .with(csrf()) // <-- CSRF
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(customerRequest)))
                 .andExpect(status().isCreated())
@@ -93,11 +93,11 @@ class CustomerControllerTest {
 
     @Test
     void getAllCustomers_ShouldReturnPage() throws Exception {
-        // Given
+        
         Page<CustomerResponseDTO> responsePage = new PageImpl<>(List.of(customerResponse));
         when(customerService.findAllCustomers(any(), any(Pageable.class))).thenReturn(responsePage);
 
-        // When & Then
+        
         mockMvc.perform(get("/api/customers")
                         .param("page", "0")
                         .param("size", "5")
@@ -108,10 +108,10 @@ class CustomerControllerTest {
 
     @Test
     void getCustomerById_ShouldReturn200_WhenFound() throws Exception {
-        // Given
+        
         when(customerService.getCustomerById(1L)).thenReturn(customerResponse);
 
-        // When & Then
+        
         mockMvc.perform(get("/api/customers/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L));
@@ -119,22 +119,22 @@ class CustomerControllerTest {
 
     @Test
     void getCustomerById_ShouldReturn404_WhenNotFound() throws Exception {
-        // Given
+        
         when(customerService.getCustomerById(99L)).thenThrow(new EntityNotFoundException("Cliente no encontrado"));
 
-        // When & Then
+        
         mockMvc.perform(get("/api/customers/99"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void updateCustomer_ShouldReturn200() throws Exception {
-        // Given
+        
         when(customerService.updateCustomer(eq(1L), any(CustomerRequestDTO.class))).thenReturn(customerResponse);
 
-        // When & Then
+        
         mockMvc.perform(put("/api/customers/1")
-                        .with(csrf()) // <-- CSRF
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(customerRequest)))
                 .andExpect(status().isOk())
@@ -143,23 +143,23 @@ class CustomerControllerTest {
 
     @Test
     void deleteCustomerById_ShouldReturn204() throws Exception {
-        // Given
+        
         doNothing().when(customerService).deleteCustomerById(1L);
 
-        // When & Then
+        
         mockMvc.perform(delete("/api/customers/1")
-                        .with(csrf())) // <-- CSRF
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void addAddressToCustomer_ShouldReturn201() throws Exception {
-        // Given
+        
         when(customerService.addAddressToCustomer(eq(1L), any(AddressRequestDTO.class))).thenReturn(addressResponse);
 
-        // When & Then
+        
         mockMvc.perform(post("/api/customers/1/addresses")
-                        .with(csrf()) // <-- CSRF
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addressRequest)))
                 .andExpect(status().isCreated())
@@ -168,12 +168,12 @@ class CustomerControllerTest {
 
     @Test
     void setDefaultAddress_ShouldReturn200() throws Exception {
-        // Given
+        
         when(customerService.markAddressAsDefault(1L, 10L)).thenReturn(addressResponse);
 
-        // When & Then
+        
         mockMvc.perform(put("/api/customers/1/addresses/10/default")
-                        .with(csrf())) // <-- CSRF
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(10L));
     }

@@ -47,28 +47,23 @@ class ErrorDtoTest {
         assertEquals(detail1, detail2, "Los DTOs idénticos deben ser iguales");
         assertEquals(detail1.hashCode(), detail2.hashCode(), "Los DTOs idénticos deben tener el mismo hashCode");
 
-        // Probar ramas de equals()
         assertNotEquals(detail1, null);
         assertNotEquals(detail1, new Object());
         assertEquals(detail1, detail1);
 
-        // Probar desigualdad por cada campo
         ErrorDetailDTO diffField = ErrorDetailDTO.builder().field("password").message("must not be null").build();
         ErrorDetailDTO diffMessage = ErrorDetailDTO.builder().field("email").message("diferente").build();
         assertNotEquals(detail1, diffField);
         assertNotEquals(detail1, diffMessage);
 
-        // Probar getters y setters (Data)
         detail1.setField("password");
         assertEquals("password", detail1.getField());
 
-        // Probar toString()
         assertNotNull(detail1.toString());
     }
 
     @Test
     void errorDetailDTOBuilder_ShouldCoverToString() {
-        // Cobertura para el método toString() del Builder
         assertNotNull(ErrorDetailDTO.builder().field("test").toString());
     }
 
@@ -77,12 +72,10 @@ class ErrorDtoTest {
         assertEquals(response1, response2, "Los DTOs idénticos deben ser iguales");
         assertEquals(response1.hashCode(), response2.hashCode(), "Los DTOs idénticos deben tener el mismo hashCode");
 
-        // Probar ramas de equals()
         assertNotEquals(response1, null);
         assertNotEquals(response1, new Object());
         assertEquals(response1, response1);
 
-        // Probar desigualdad por cada campo
         ErrorResponseDTO diffTime = ErrorResponseDTO.builder().timestamp(Instant.now()).build();
         ErrorResponseDTO diffPath = ErrorResponseDTO.builder().path("/diff").build();
         ErrorResponseDTO diffStatus = ErrorResponseDTO.builder().status(500).build();
@@ -99,17 +92,14 @@ class ErrorDtoTest {
         assertNotEquals(response1, diffMsg);
         assertNotEquals(response1, diffDetails);
 
-        // Probar getters y setters (Data)
         response1.setStatus(500);
         assertEquals(500, response1.getStatus());
 
-        // Probar toString()
         assertNotNull(response1.toString());
     }
 
     @Test
     void errorResponseDTOBuilder_ShouldCoverToString() {
-        // Cobertura para el método toString() del Builder
         assertNotNull(ErrorResponseDTO.builder().code("test").toString());
     }
 }

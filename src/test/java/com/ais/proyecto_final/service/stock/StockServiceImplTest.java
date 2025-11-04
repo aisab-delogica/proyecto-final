@@ -1,4 +1,3 @@
-// Ubicación: src/test/java/com/ais/proyecto_final/service/stock/StockServiceImplTest.java
 package com.ais.proyecto_final.service.stock;
 
 import com.ais.proyecto_final.entity.Product;
@@ -38,7 +37,7 @@ class StockServiceImplTest {
                 .sku("SKU001")
                 .name("Test Product")
                 .price(new BigDecimal("100.00"))
-                .stock(5) // Stock inicial
+                .stock(5)
                 .active(true)
                 .build();
     }

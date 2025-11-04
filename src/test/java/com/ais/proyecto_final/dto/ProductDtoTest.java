@@ -23,7 +23,6 @@ class ProductDtoTest {
 
     @BeforeEach
     void setUp() {
-        // --- Setup para ProductRequestDTO ---
         requestDto1 = ProductRequestDTO.builder()
                 .sku("SKU123").name("Product A").description("Desc A")
                 .price(PRICE_A).stock(100).active(true).build();
@@ -32,7 +31,6 @@ class ProductDtoTest {
                 .sku("SKU123").name("Product A").description("Desc A")
                 .price(PRICE_A).stock(100).active(true).build();
 
-        // --- Setup para ProductResponseDTO ---
         responseDto1 = ProductResponseDTO.builder()
                 .id(1L).sku("SKU1").name("Name 1").description("Desc 1")
                 .price(PRICE_A).stock(50).active(true)
@@ -44,19 +42,16 @@ class ProductDtoTest {
                 .createdAt(FIXED_TIME_A).updatedAt(FIXED_TIME_A).build();
     }
 
-    // --- Tests para ProductRequestDTO ---
 
     @Test
     void productRequestDTO_EqualsAndHashCodeContract() {
         assertEquals(requestDto1, requestDto2, "Dos DTOs idénticos deben ser iguales");
         assertEquals(requestDto1.hashCode(), requestDto2.hashCode(), "Dos DTOs idénticos deben tener el mismo hashCode");
 
-        // Test de ramas de 'equals'
         assertNotEquals(null, requestDto1, "El DTO no debe ser igual a null");
         assertNotEquals(new Object(), requestDto1, "El DTO no debe ser igual a un objeto de otra clase");
         assertEquals(requestDto1, requestDto1, "El DTO debe ser igual a sí mismo");
 
-        // Probar desigualdad por cada campo (esto cubre todas las ramas 'if' de 'equals')
         assertNotEquals(requestDto1, ProductRequestDTO.builder()
                 .sku("SKU_DIFF").name("Product A").description("Desc A")
                 .price(PRICE_A).stock(100).active(true).build());
@@ -84,7 +79,7 @@ class ProductDtoTest {
 
     @Test
     void productRequestDTO_GettersSettersAndToString() {
-        // Test Setters (ya probados en el @Test original, pero los añadimos por completitud)
+
         requestDto1.setSku("SKU456");
         assertEquals("SKU456", requestDto1.getSku());
 
@@ -103,30 +98,23 @@ class ProductDtoTest {
         requestDto1.setActive(false);
         assertFalse(requestDto1.getActive());
 
-        // Test toString()
         assertNotNull(requestDto1.toString());
     }
 
     @Test
     void productRequestDTOBuilder_ToString() {
-        // Test para cubrir el toString() de la clase Builder interna
         assertNotNull(ProductRequestDTO.builder().name("Test").toString());
     }
-
-
-    // --- Tests para ProductResponseDTO ---
 
     @Test
     void productResponseDTO_EqualsAndHashCodeContract() {
         assertEquals(responseDto1, responseDto2, "Dos DTOs idénticos deben ser iguales");
         assertEquals(responseDto1.hashCode(), responseDto2.hashCode(), "Dos DTOs idénticos deben tener el mismo hashCode");
 
-        // Test de ramas de 'equals'
         assertNotEquals(null, responseDto1, "El DTO no debe ser igual a null");
         assertNotEquals(new Object(), responseDto1, "El DTO no debe ser igual a un objeto de otra clase");
         assertEquals(responseDto1, responseDto1, "El DTO debe ser igual a sí mismo");
 
-        // Probar desigualdad por cada campo
         assertNotEquals(responseDto1, ProductResponseDTO.builder()
                 .id(99L).sku("SKU1").name("Name 1").description("Desc 1")
                 .price(PRICE_A).stock(50).active(true)
@@ -175,7 +163,6 @@ class ProductDtoTest {
 
     @Test
     void productResponseDTO_GettersSettersAndToString() {
-        // Test Setters
         responseDto1.setId(2L);
         assertEquals(2L, responseDto1.getId());
 
@@ -203,13 +190,11 @@ class ProductDtoTest {
         responseDto1.setUpdatedAt(FIXED_TIME_B);
         assertEquals(FIXED_TIME_B, responseDto1.getUpdatedAt());
 
-        // Test toString()
         assertNotNull(responseDto1.toString());
     }
 
     @Test
     void productResponseDTOBuilder_ToString() {
-        // Test para cubrir el toString() de la clase Builder interna
         assertNotNull(ProductResponseDTO.builder().name("Test").toString());
     }
 }

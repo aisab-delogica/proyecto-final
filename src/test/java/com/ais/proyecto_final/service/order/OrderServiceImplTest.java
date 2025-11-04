@@ -12,7 +12,7 @@ import com.ais.proyecto_final.repository.AddressRepository;
 import com.ais.proyecto_final.repository.CustomerRepository;
 import com.ais.proyecto_final.repository.OrderRepository;
 import com.ais.proyecto_final.repository.ProductRepository;
-import com.ais.proyecto_final.service.stock.StockService; // Importar
+import com.ais.proyecto_final.service.stock.StockService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +65,7 @@ class OrderServiceImplTest {
     private Address testAddress;
     private Product testProduct;
     private OrderRequestDTO validRequest;
-    private Order mockOrder; // <- AÑADIDO
+    private Order mockOrder;
 
     @BeforeEach
     void setUp() {
@@ -73,7 +73,6 @@ class OrderServiceImplTest {
         testAddress = Address.builder().id(2L).customer(testCustomer).line1("Calle Falsa 123").build();
         testProduct = Product.builder().id(10L).sku("PROD-01").name("Laptop").price(new BigDecimal("1000.00")).stock(5).active(true).build();
 
-        // AÑADIDO: Objeto mock para la primera llamada save
         mockOrder = Order.builder().id(50L).items(new ArrayList<>()).build();
 
         validRequest = OrderRequestDTO.builder()
@@ -84,21 +83,17 @@ class OrderServiceImplTest {
                 ))
                 .build();
 
-        // Mocks básicos
         when(customerRepository.findById(1L)).thenReturn(Optional.of(testCustomer));
         when(addressRepository.findById(2L)).thenReturn(Optional.of(testAddress));
         when(productRepository.findById(10L)).thenReturn(Optional.of(testProduct));
         when(orderMapper.toEntity(any(OrderRequestDTO.class))).thenReturn(Order.builder().items(new ArrayList<>()).build());
         when(orderItemMapper.toEntity(any())).thenReturn(OrderItem.builder().build());
 
-        // CORRECCIÓN: Añadir este mock para la PRIMERA llamada save (persistedOrder)
-        // Esto evita el NullPointerException en los logs de los tests que fallan
         when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
     }
 
     @Test
     void createOrder_ShouldCreateAndReturnOrder_Success() {
-        // Mock específico para la SEGUNDA llamada save (savedOrder) en este test
         Order persistedOrder = Order.builder()
                 .id(1L)
                 .status(OrderStatus.CREATED)
@@ -106,7 +101,6 @@ class OrderServiceImplTest {
                 .items(new ArrayList<>())
                 .build();
 
-        // Sobrescribimos el mock de save() para que devuelva el objeto específico de este test
         when(orderRepository.save(any(Order.class))).thenReturn(persistedOrder);
 
         when(orderMapper.toResponseDto(any(Order.class))).thenReturn(OrderResponseDTO.builder().id(1L).total(new BigDecimal("1000.00")).status(OrderStatus.PAID).build());
@@ -117,7 +111,6 @@ class OrderServiceImplTest {
         assertNotNull(result);
         assertEquals(1L, result.getId());
 
-        // Debe llamarse 2 veces (la 1a para persistedOrder, la 2a para savedOrder)
         verify(orderRepository, times(2)).save(any(Order.class));
         verify(stockService, times(1)).reduceStock(10L, 1);
     }
@@ -127,7 +120,7 @@ class OrderServiceImplTest {
         when(customerRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> orderService.createOrder(validRequest));
-        verify(orderRepository, never()).save(any()); // Nunca debe guardar si el cliente no existe
+        verify(orderRepository, never()).save(any());
     }
 
     @Test
@@ -136,21 +129,18 @@ class OrderServiceImplTest {
         when(addressRepository.findById(anyLong())).thenReturn(Optional.of(otherAddress));
 
         assertThrows(OrderBusinessException.class, () -> orderService.createOrder(validRequest));
-        verify(orderRepository, never()).save(any()); // Nunca debe guardar
+        verify(orderRepository, never()).save(any());
     }
 
     @Test
     void createOrder_ShouldThrowException_ProductNotFound() {
-        // El setUp() ya mockea save()
         when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        // Ahora el assertThrows SÍ recibirá la EntityNotFoundException (y no un NPE)
         assertThrows(EntityNotFoundException.class, () -> orderService.createOrder(validRequest));
     }
 
     @Test
     void createOrder_ShouldThrowException_ProductInactive() {
-        // El setUp() ya mockea save()
         doThrow(new OrderBusinessException("El producto no está activo."))
                 .when(stockService).reduceStock(10L, 1);
 
@@ -159,7 +149,6 @@ class OrderServiceImplTest {
 
     @Test
     void createOrder_ShouldThrowException_InsufficientStock() {
-        // El setUp() ya mockea save()
         doThrow(new OrderBusinessException("Stock insuficiente"))
                 .when(stockService).reduceStock(10L, 1);
 
@@ -173,7 +162,6 @@ class OrderServiceImplTest {
 
         when(orderRepository.findById(1L)).thenReturn(Optional.of(existingOrder));
 
-        // Sobrescribimos el mock de save() para este test
         when(orderRepository.save(any(Order.class))).thenReturn(existingOrder);
 
         when(orderMapper.toResponseDto(any(Order.class))).thenReturn(OrderResponseDTO.builder().status(OrderStatus.PAID).build());
