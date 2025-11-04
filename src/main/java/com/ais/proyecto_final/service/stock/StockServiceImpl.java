@@ -34,7 +34,6 @@ public class StockServiceImpl implements StockService {
     @Transactional
     @Override
     public void returnStock(Long productId, Integer quantity) {
-        // Encontramos el producto. Si no existe, EntityNotFoundException es apropiado.
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Producto " + productId + " no existe al intentar devolver stock."));
 
