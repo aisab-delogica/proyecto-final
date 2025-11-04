@@ -269,4 +269,41 @@ class CustomerServiceImplTest {
 
         assertThrows(EntityNotFoundException.class, () -> customerService.markAddressAsDefault(99L, ADDRESS_ID));
     }
-}
+    @Test
+    void updateCustomer_ShouldThrowNotFound_WhenCustomerDoesNotExist() {
+        when(customerRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> customerService.updateCustomer(99L, customerRequest));
+        verify(customerRepository, never()).save(any(Customer.class));
+    }
+
+    @Test
+    void deleteCustomerById_ShouldSucceed_WhenCustomerExists() {
+        when(customerRepository.existsById(CUSTOMER_ID)).thenReturn(true);
+        doNothing().when(customerRepository).deleteById(CUSTOMER_ID);
+
+        customerService.deleteCustomerById(CUSTOMER_ID);
+
+        verify(customerRepository, times(1)).existsById(CUSTOMER_ID);
+        verify(customerRepository, times(1)).deleteById(CUSTOMER_ID);
+    }
+
+    @Test
+    void deleteCustomerById_ShouldThrowNotFound_WhenCustomerDoesNotExist() {
+        when(customerRepository.existsById(anyLong())).thenReturn(false);
+
+        assertThrows(EntityNotFoundException.class, () -> customerService.deleteCustomerById(99L));
+        verify(customerRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    void addAddressToCustomer_ShouldThrowNotFound_WhenCustomerDoesNotExist() {
+        AddressRequestDTO newAddressRequest = new AddressRequestDTO();
+        newAddressRequest.setLine1("Nueva Direccion");
+        newAddressRequest.setDefaultAddress(true);
+
+        when(customerRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> customerService.addAddressToCustomer(99L, newAddressRequest));
+        verify(customerRepository, never()).save(any(Customer.class));
+    }}

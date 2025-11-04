@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
@@ -93,5 +94,30 @@ class ProductRepositoryTest {
         Page<Product> resultNameOInactive = productRepository.findAll(specNameOInactive, PageRequest.of(0, 10));
         assertEquals(1, resultNameOInactive.getTotalElements());
         assertEquals("SKU003", resultNameOInactive.getContent().get(0).getSku());
+    }
+    @Test
+    void testProductSpecificationConstructor() {
+        // Prueba para la cobertura del constructor por defecto
+        ProductSpecification spec = new ProductSpecification();
+        assertNotNull(spec);
+    }
+
+    @Test
+    void findAll_ShouldHandleNullAndEmptyFilters() {
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Caso: nombre=null y activo=true (Debe encontrar 2)
+        Specification<Product> specNullName = ProductSpecification.nameContains(null)
+                .and(ProductSpecification.isActive(true));
+
+        Page<Product> resultNullName = productRepository.findAll(specNullName, pageable);
+        assertEquals(2, resultNullName.getTotalElements());
+
+        // Caso: nombre="" y activo=true (Debe encontrar 2)
+        Specification<Product> specEmptyName = ProductSpecification.nameContains("")
+                .and(ProductSpecification.isActive(true));
+
+        Page<Product> resultEmptyName = productRepository.findAll(specEmptyName, pageable);
+        assertEquals(2, resultEmptyName.getTotalElements());
     }
 }

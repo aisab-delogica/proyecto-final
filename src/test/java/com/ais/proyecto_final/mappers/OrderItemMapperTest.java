@@ -80,4 +80,32 @@ public class OrderItemMapperTest {
         // 0 * 10.50 = 0
         assertThat(dto.getLineTotal()).isEqualByComparingTo("0.00");
     }
+    @Test
+    void shouldHandleNulls() {
+        // Test para toEntity(null)
+        OrderItem entity = orderItemMapper.toEntity(null);
+        assertThat(entity).isNull();
+
+        // Test para toResponseDto(null)
+        LineItemResponseDTO dto = orderItemMapper.toResponseDto(null);
+        assertThat(dto).isNull();
+    }
+
+    @Test
+    void shouldMapEntityToResponseDtoWhenProductIsNull() {
+        OrderItem entity = OrderItem.builder()
+                .id(1L)
+                .product(null)
+                .quantity(3)
+                .unitPrice(new BigDecimal("10.50"))
+                .build();
+
+        LineItemResponseDTO dto = orderItemMapper.toResponseDto(entity);
+
+        assertThat(dto).isNotNull();
+        assertThat(dto.getProductId()).isNull();
+        assertThat(dto.getQuantity()).isEqualTo(3);
+        assertThat(dto.getUnitPrice()).isEqualByComparingTo("10.50");
+        assertThat(dto.getLineTotal()).isEqualByComparingTo("31.50");
+    }
 }

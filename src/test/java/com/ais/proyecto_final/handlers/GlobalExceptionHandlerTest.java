@@ -139,4 +139,19 @@ class GlobalExceptionHandlerTest {
         assertEquals("BUSINESS_RULE_VIOLATION", body.getCode());
         assertEquals(errorMessage, body.getMessage());
     }
+    @Test
+    void handleInternalServerError_ShouldReturnInternalServerError() {
+        Exception ex = new NullPointerException("Error inesperado");
+
+        ResponseEntity<ErrorResponseDTO> response = handler.handleInternalServerError(ex, request);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ErrorResponseDTO body = response.getBody();
+        assertNotNull(body);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), body.getStatus());
+        assertEquals("INTERNAL_ERROR", body.getCode());
+        assertEquals("Ha habido un error interno.", body.getMessage());
+        assertNull(body.getDetails());
+        assertEquals(REQUEST_PATH, body.getPath());
+    }
 }

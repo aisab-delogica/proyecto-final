@@ -102,4 +102,44 @@ class ErrorDtoTest {
     void errorResponseDTOBuilder_ShouldCoverToString() {
         assertNotNull(ErrorResponseDTO.builder().code("test").toString());
     }
+
+    @Test
+    void errorDetailDTO_EqualsAndHashCode_WithNullFields() {
+        ErrorDetailDTO dto1 = ErrorDetailDTO.builder().field(null).message("msg").build();
+        ErrorDetailDTO dto2 = ErrorDetailDTO.builder().field("field").message(null).build();
+        ErrorDetailDTO dto3 = ErrorDetailDTO.builder().field(null).message("msg").build();
+
+        assertNotEquals(dto1, dto2);
+        assertNotEquals(dto2, dto1);
+
+        assertEquals(dto1, dto3);
+        assertEquals(dto1.hashCode(), dto3.hashCode());
+        assertNotEquals(dto1.hashCode(), dto2.hashCode());
+
+        assertNotEquals(dto1, ErrorDetailDTO.builder().field(null).message(null).build());
+    }
+
+    @Test
+    void errorResponseDTO_EqualsAndHashCode_WithNullFields() {
+        ErrorResponseDTO dto1 = ErrorResponseDTO.builder()
+                .timestamp(null).path("/path").status(400)
+                .error(null).code("CODE").message(null)
+                .details(null).build();
+
+        ErrorResponseDTO dto2 = ErrorResponseDTO.builder()
+                .timestamp(FIXED_TIME).path(null).status(400)
+                .error("ERR").code(null).message("MSG")
+                .details(List.of()).build();
+
+        ErrorResponseDTO dto3 = ErrorResponseDTO.builder()
+                .timestamp(null).path("/path").status(400)
+                .error(null).code("CODE").message(null)
+                .details(null).build();
+
+        assertNotEquals(dto1, dto2);
+        assertNotEquals(dto2, dto1);
+        assertEquals(dto1, dto3);
+        assertEquals(dto1.hashCode(), dto3.hashCode());
+        assertNotEquals(dto1.hashCode(), dto2.hashCode());
+    }
 }
