@@ -6,8 +6,11 @@ import com.ais.proyecto_final.exceptions.DuplicateResourceException;
 import com.ais.proyecto_final.exceptions.OrderBusinessException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger; // <- Importar Logger
+import org.slf4j.LoggerFactory; // <- Importar LoggerFactory
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -18,9 +21,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.springframework.security.core.AuthenticationException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     /* Contrato de errores segun documentacion
 {
  "timestamp": "2025-09-15T10:00:00Z",
@@ -159,6 +164,47 @@ public class GlobalExceptionHandler {
                 .error(status.getReasonPhrase())
                 .code("BUSINESS_RULE_VIOLATION")
                 .message(ex.getMessage())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
+// handler generíco para excepciones no controladas (internal error)
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseDTO> handleInternalServerError(
+            Exception ex, HttpServletRequest request) {
+        log.error("Unhandled Internal Server Error at path {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .timestamp(Instant.now())
+                .path(request.getRequestURI())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .code("INTERNAL_ERROR")
+                .message("Ha habido un error interno.")
+                .build();
+
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
+    /*
+        401 Unauthorized AUTHENTICATION_FAILURE (Ej. login incorrecto)
+        */
+    @ExceptionHandler({AuthenticationException.class, BadCredentialsException.class})
+    public ResponseEntity<ErrorResponseDTO> handleAuthenticationException(
+            AuthenticationException ex, HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .timestamp(Instant.now())
+                .path(request.getRequestURI())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .code("AUTHENTICATION_FAILURE")
+                .message("Credenciales inválidas o autenticación fallida.")
                 .build();
 
         return new ResponseEntity<>(errorResponse, status);

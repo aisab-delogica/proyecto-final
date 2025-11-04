@@ -9,11 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AddressRequestDTOTests {
 
@@ -35,6 +31,8 @@ public class AddressRequestDTOTests {
         dto.setDefaultAddress(true);
         return dto;
     }
+
+    // --- Tests de Validación (los tuyos, que están perfectos) ---
 
     @Test
     void whenValidAddressRequestDTO_thenNoViolations() {
@@ -88,30 +86,52 @@ public class AddressRequestDTOTests {
         assertTrue(violations.isEmpty());
     }
 
+    // --- Test de Cobertura de Lombok @Data ---
+
     @Test
-    void lombokDataMethodsWorks() {
-        AddressRequestDTO dto1 = createValidDTO();
-        AddressRequestDTO dto2 = createValidDTO();
+    void testLombokDataMethods() {
+        // 1. Test No-Args Constructor
+        AddressRequestDTO dto1 = new AddressRequestDTO();
+        assertNotNull(dto1);
 
-        
-        assertEquals(dto1, dto2); 
-        assertEquals(dto1.hashCode(), dto2.hashCode());
+        // 2. Test Setters
+        dto1.setLine1("Line 1");
+        dto1.setLine2("Line 2");
+        dto1.setCity("City");
+        dto1.setPostalCode("12345");
+        dto1.setCountry("Country");
+        dto1.setDefaultAddress(true);
 
-        
-        dto1.setCountry("Chile"); 
-        assertEquals("Chile", dto1.getCountry());
+        // 3. Test Getters
+        assertEquals("Line 1", dto1.getLine1());
+        assertEquals("Line 2", dto1.getLine2());
+        assertEquals("City", dto1.getCity());
+        assertEquals("12345", dto1.getPostalCode());
+        assertEquals("Country", dto1.getCountry());
         assertTrue(dto1.isDefaultAddress());
 
-        
-        assertNotEquals(dto1, dto2); 
+        // 4. Test equals() y hashCode()
+        AddressRequestDTO dto2 = createValidDTO();
+        dto2.setLine1("Line 1");
+        dto2.setLine2("Line 2");
+        dto2.setCity("City");
+        dto2.setPostalCode("12345");
+        dto2.setCountry("Country");
+        dto2.setDefaultAddress(true);
 
-        
-        assertTrue(dto1.toString().contains("28001"));
-    }
+        AddressRequestDTO dto3 = new AddressRequestDTO();
+        dto3.setLine1("Different");
 
-    @Test
-    void lombokNoArgsConstructorWorks() {
-        AddressRequestDTO dto = new AddressRequestDTO();
-        assertNotNull(dto);
+        assertEquals(dto1, dto1); // Self
+        assertEquals(dto1, dto2); // Equal
+        assertEquals(dto1.hashCode(), dto2.hashCode()); // HashCode
+        assertNotEquals(dto1, dto3); // Different
+        assertNotEquals(dto1.hashCode(), dto3.hashCode()); // HashCode different
+        assertNotEquals(dto1, null); // Null
+        assertNotEquals(dto1, new Object()); // Different class
+
+        // 5. Test toString()
+        assertNotNull(dto1.toString());
+        assertTrue(dto1.toString().contains("Line 1"));
     }
 }

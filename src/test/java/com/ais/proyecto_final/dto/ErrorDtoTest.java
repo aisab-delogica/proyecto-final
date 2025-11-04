@@ -2,6 +2,7 @@ package com.ais.proyecto_final.dto;
 
 import com.ais.proyecto_final.dto.error.ErrorDetailDTO;
 import com.ais.proyecto_final.dto.error.ErrorResponseDTO;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.List;
@@ -10,70 +11,105 @@ import static org.junit.jupiter.api.Assertions.*;
 class ErrorDtoTest {
 
     private final Instant FIXED_TIME = Instant.parse("2023-10-27T10:00:00Z");
+    private ErrorDetailDTO detail1;
+    private ErrorDetailDTO detail2;
+    private ErrorResponseDTO response1;
+    private ErrorResponseDTO response2;
 
-    @Test
-    void errorDetailDTO_ShouldCoverAllLombokMethods() {
-        
-        ErrorDetailDTO dto1 = ErrorDetailDTO.builder()
-                .field("email")
-                .message("must not be null")
-                .build();
+    @BeforeEach
+    void setUp() {
+        detail1 = ErrorDetailDTO.builder().field("email").message("must not be null").build();
+        detail2 = ErrorDetailDTO.builder().field("email").message("must not be null").build();
 
-        assertNotNull(dto1);
-        assertEquals("email", dto1.getField());
-        assertEquals("must not be null", dto1.getMessage());
-
-        
-        dto1.setField("password");
-        dto1.setMessage("size must be > 6");
-        assertEquals("password", dto1.getField());
-        assertEquals("size must be > 6", dto1.getMessage());
-
-        
-        ErrorDetailDTO dto2 = ErrorDetailDTO.builder().field("a").message("b").build();
-        ErrorDetailDTO dto3 = ErrorDetailDTO.builder().field("a").message("b").build();
-        ErrorDetailDTO dto4 = ErrorDetailDTO.builder().field("c").message("d").build();
-
-        assertEquals(dto2, dto3);
-        assertEquals(dto2.hashCode(), dto3.hashCode());
-        assertNotEquals(dto2, dto4);
-        assertNotNull(dto1.toString());
-    }
-
-    @Test
-    void errorResponseDTO_ShouldCoverAllLombokMethods() {
-        ErrorDetailDTO detail = ErrorDetailDTO.builder().field("name").message("required").build();
-        List<ErrorDetailDTO> detailsList = List.of(detail);
-
-        ErrorResponseDTO dto1 = ErrorResponseDTO.builder()
+        response1 = ErrorResponseDTO.builder()
                 .timestamp(FIXED_TIME)
                 .path("/api/users")
                 .status(400)
                 .error("Validation Error")
                 .code("ERR-400-01")
                 .message("Request validation failed")
-                .details(detailsList)
+                .details(List.of(detail1))
                 .build();
 
-        assertNotNull(dto1);
-        assertEquals(FIXED_TIME, dto1.getTimestamp());
-        assertEquals(400, dto1.getStatus());
-        assertEquals(1, dto1.getDetails().size());
+        response2 = ErrorResponseDTO.builder()
+                .timestamp(FIXED_TIME)
+                .path("/api/users")
+                .status(400)
+                .error("Validation Error")
+                .code("ERR-400-01")
+                .message("Request validation failed")
+                .details(List.of(detail2))
+                .build();
+    }
 
-        
-        dto1.setStatus(500);
-        assertEquals(500, dto1.getStatus());
-        dto1.setDetails(List.of());
-        assertEquals(0, dto1.getDetails().size());
+    @Test
+    void errorDetailDTO_ShouldCoverLombokMethods() {
+        assertEquals(detail1, detail2, "Los DTOs idénticos deben ser iguales");
+        assertEquals(detail1.hashCode(), detail2.hashCode(), "Los DTOs idénticos deben tener el mismo hashCode");
 
-        
-        ErrorResponseDTO dto2 = ErrorResponseDTO.builder().status(404).code("E1").build();
-        ErrorResponseDTO dto3 = ErrorResponseDTO.builder().status(404).code("E1").build();
-        ErrorResponseDTO dto4 = ErrorResponseDTO.builder().status(500).code("E1").build();
+        // Probar ramas de equals()
+        assertNotEquals(detail1, null);
+        assertNotEquals(detail1, new Object());
+        assertEquals(detail1, detail1);
 
-        assertEquals(dto2, dto3);
-        assertEquals(dto2.hashCode(), dto3.hashCode());
-        assertNotEquals(dto2, dto4);
-        assertNotNull(dto1.toString());
+        // Probar desigualdad por cada campo
+        ErrorDetailDTO diffField = ErrorDetailDTO.builder().field("password").message("must not be null").build();
+        ErrorDetailDTO diffMessage = ErrorDetailDTO.builder().field("email").message("diferente").build();
+        assertNotEquals(detail1, diffField);
+        assertNotEquals(detail1, diffMessage);
+
+        // Probar getters y setters (Data)
+        detail1.setField("password");
+        assertEquals("password", detail1.getField());
+
+        // Probar toString()
+        assertNotNull(detail1.toString());
+    }
+
+    @Test
+    void errorDetailDTOBuilder_ShouldCoverToString() {
+        // Cobertura para el método toString() del Builder
+        assertNotNull(ErrorDetailDTO.builder().field("test").toString());
+    }
+
+    @Test
+    void errorResponseDTO_ShouldCoverLombokMethods() {
+        assertEquals(response1, response2, "Los DTOs idénticos deben ser iguales");
+        assertEquals(response1.hashCode(), response2.hashCode(), "Los DTOs idénticos deben tener el mismo hashCode");
+
+        // Probar ramas de equals()
+        assertNotEquals(response1, null);
+        assertNotEquals(response1, new Object());
+        assertEquals(response1, response1);
+
+        // Probar desigualdad por cada campo
+        ErrorResponseDTO diffTime = ErrorResponseDTO.builder().timestamp(Instant.now()).build();
+        ErrorResponseDTO diffPath = ErrorResponseDTO.builder().path("/diff").build();
+        ErrorResponseDTO diffStatus = ErrorResponseDTO.builder().status(500).build();
+        ErrorResponseDTO diffError = ErrorResponseDTO.builder().error("diff").build();
+        ErrorResponseDTO diffCode = ErrorResponseDTO.builder().code("diff").build();
+        ErrorResponseDTO diffMsg = ErrorResponseDTO.builder().message("diff").build();
+        ErrorResponseDTO diffDetails = ErrorResponseDTO.builder().details(List.of()).build();
+
+        assertNotEquals(response1, diffTime);
+        assertNotEquals(response1, diffPath);
+        assertNotEquals(response1, diffStatus);
+        assertNotEquals(response1, diffError);
+        assertNotEquals(response1, diffCode);
+        assertNotEquals(response1, diffMsg);
+        assertNotEquals(response1, diffDetails);
+
+        // Probar getters y setters (Data)
+        response1.setStatus(500);
+        assertEquals(500, response1.getStatus());
+
+        // Probar toString()
+        assertNotNull(response1.toString());
+    }
+
+    @Test
+    void errorResponseDTOBuilder_ShouldCoverToString() {
+        // Cobertura para el método toString() del Builder
+        assertNotNull(ErrorResponseDTO.builder().code("test").toString());
     }
 }
