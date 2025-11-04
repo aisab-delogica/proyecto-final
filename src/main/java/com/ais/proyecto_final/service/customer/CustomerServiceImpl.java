@@ -134,7 +134,15 @@ public class CustomerServiceImpl implements CustomerService{
                     return new EntityNotFoundException("Cliente " + customerId + " no encontrado.");
                 });
 
-        Address updatedAddress = customer.setDefaultAddress(addressId);
+        Address updatedAddress = null;
+        for (Address addr : customer.getAddresses()) {
+            if (addr.getId().equals(addressId)) {
+                addr.setDefaultAddress(true);
+                updatedAddress = addr;
+            } else {
+                addr.setDefaultAddress(false);
+            }
+        }
 
         if (updatedAddress == null) {
             log.warn("Fallo al marcar dirección con id {} por defecto, no se encuentra esa dirección en el cliente ID: {}", addressId, customerId);

@@ -11,8 +11,8 @@ import java.util.Optional;
 public interface ProductService {
 
     ProductResponseDTO createProduct(ProductRequestDTO productDto);
-// page
- Page<ProductResponseDTO> findAllProducts(String name, Boolean active, Pageable pageable);
+
+    Page<ProductResponseDTO> findAllProducts(String name, Boolean active, Pageable pageable);
 
     ProductResponseDTO getProductById(Long id);
 
@@ -20,9 +20,12 @@ public interface ProductService {
 
     void deleteProductById(Long id);
 
-    //delete HARD
-     void hardDeleteProductById(Long id);
+    void hardDeleteProductById(Long id);
 
     Optional<Product> getProductEntityById(Long id);
+
+    void reduceStock(Long productId, Integer quantity);
+
+    void returnStock(Long productId, Integer quantity);
 
 }

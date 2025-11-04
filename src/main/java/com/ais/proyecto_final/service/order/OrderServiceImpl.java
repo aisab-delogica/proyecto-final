@@ -12,7 +12,7 @@ import com.ais.proyecto_final.repository.CustomerRepository;
 import com.ais.proyecto_final.repository.OrderRepository;
 import com.ais.proyecto_final.repository.ProductRepository;
 import com.ais.proyecto_final.repository.OrderSpecification;
-import com.ais.proyecto_final.service.stock.StockService;
+import com.ais.proyecto_final.service.product.ProductService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
@@ -41,11 +41,9 @@ public class OrderServiceImpl implements OrderService {
     private final AddressRepository addressRepository;
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
-    private final StockService stockService;
+    private final ProductService productService;
 
 
-    //Principio Abierto/Cerrado: si añades un nuevo estado o transición, modificas el map,
-    // no la lógica del método isTransitionValid
     private static final Map<OrderStatus, Set<OrderStatus>> VALID_TRANSITIONS = Map.of(
             OrderStatus.CREATED, Set.of(OrderStatus.PAID, OrderStatus.CANCELLED),
             OrderStatus.PAID, Set.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED),
@@ -83,8 +81,6 @@ public class OrderServiceImpl implements OrderService {
         newOrder.setOrderDate(LocalDateTime.now());
         newOrder.setTotal(BigDecimal.ZERO);
 
-        // AQUI --> ELIMINADO EL PRIMER orderRepository.save(newOrder);
-
         log.info("Pedido inicializado en memoria. Procesando los productos...");
 
         BigDecimal totalOrder = BigDecimal.ZERO;
@@ -98,7 +94,7 @@ public class OrderServiceImpl implements OrderService {
                             return new EntityNotFoundException("Producto " + itemRequest.getProductId() + " no encontrado.");
                         });
 
-                stockService.reduceStock(product.getId(), itemRequest.getQuantity());
+                productService.reduceStock(product.getId(), itemRequest.getQuantity());
 
                 OrderItem orderItem = orderItemMapper.toEntity(itemRequest);
                 orderItem.setOrder(newOrder);
@@ -186,7 +182,7 @@ public class OrderServiceImpl implements OrderService {
             Product product = item.getProduct();
             if (product != null) {
                 log.info("Devolviendo {} unidades del producto {} (Pedido {})", item.getQuantity(), product.getId(), order.getId());
-                stockService.returnStock(product.getId(), item.getQuantity());
+                productService.returnStock(product.getId(), item.getQuantity());
             }
         }
     }

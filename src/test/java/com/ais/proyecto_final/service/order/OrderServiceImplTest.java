@@ -12,7 +12,7 @@ import com.ais.proyecto_final.repository.AddressRepository;
 import com.ais.proyecto_final.repository.CustomerRepository;
 import com.ais.proyecto_final.repository.OrderRepository;
 import com.ais.proyecto_final.repository.ProductRepository;
-import com.ais.proyecto_final.service.stock.StockService;
+import com.ais.proyecto_final.service.product.ProductService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +56,7 @@ class OrderServiceImplTest {
     private OrderItemMapper orderItemMapper;
 
     @Mock
-    private StockService stockService;
+    private ProductService productService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -104,7 +104,7 @@ class OrderServiceImplTest {
         when(orderRepository.save(any(Order.class))).thenReturn(persistedOrder);
 
         when(orderMapper.toResponseDto(any(Order.class))).thenReturn(OrderResponseDTO.builder().id(1L).total(new BigDecimal("1000.00")).status(OrderStatus.PAID).build());
-        doNothing().when(stockService).reduceStock(10L, 1);
+        doNothing().when(productService).reduceStock(10L, 1);
 
         OrderResponseDTO result = orderService.createOrder(validRequest);
 
@@ -112,7 +112,7 @@ class OrderServiceImplTest {
         assertEquals(1L, result.getId());
 
         verify(orderRepository, times(1)).save(any(Order.class));
-        verify(stockService, times(1)).reduceStock(10L, 1);
+        verify(productService, times(1)).reduceStock(10L, 1);
     }
 
     @Test
@@ -142,7 +142,7 @@ class OrderServiceImplTest {
     @Test
     void createOrder_ShouldThrowException_ProductInactive() {
         doThrow(new OrderBusinessException("El producto no está activo."))
-                .when(stockService).reduceStock(10L, 1);
+                .when(productService).reduceStock(10L, 1);
 
         assertThrows(OrderBusinessException.class, () -> orderService.createOrder(validRequest));
     }
@@ -150,7 +150,7 @@ class OrderServiceImplTest {
     @Test
     void createOrder_ShouldThrowException_InsufficientStock() {
         doThrow(new OrderBusinessException("Stock insuficiente"))
-                .when(stockService).reduceStock(10L, 1);
+                .when(productService).reduceStock(10L, 1);
 
         assertThrows(OrderBusinessException.class, () -> orderService.createOrder(validRequest));
     }
@@ -183,11 +183,11 @@ class OrderServiceImplTest {
         when(orderRepository.save(any(Order.class))).thenReturn(existingOrder);
         when(orderMapper.toResponseDto(any(Order.class))).thenReturn(OrderResponseDTO.builder().status(OrderStatus.CANCELLED).build());
 
-        doNothing().when(stockService).returnStock(testProduct.getId(), 2);
+        doNothing().when(productService).returnStock(testProduct.getId(), 2);
 
         orderService.updateOrderStatus(1L, dto);
 
-        verify(stockService, times(1)).returnStock(testProduct.getId(), 2);
+        verify(productService, times(1)).returnStock(testProduct.getId(), 2);
     }
 
     @Test
@@ -301,12 +301,12 @@ class OrderServiceImplTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(existingOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(existingOrder);
 
-        doNothing().when(stockService).returnStock(mockProduct.getId(), 2);
+        doNothing().when(productService).returnStock(mockProduct.getId(), 2);
 
 
         orderService.updateOrderStatus(1L, newStatusDto);
 
-        verify(stockService, times(1)).returnStock(mockProduct.getId(), 2);
+        verify(productService, times(1)).returnStock(mockProduct.getId(), 2);
         verify(orderRepository, times(1)).save(existingOrder);
     }
 }

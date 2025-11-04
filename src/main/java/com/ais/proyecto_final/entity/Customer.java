@@ -48,17 +48,4 @@ public class Customer {
     void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    public Address setDefaultAddress(Long addressId) {
-        Address newDefault = null;
-        for (Address addr : this.addresses) {
-            if (addr.getId().equals(addressId)) {
-                addr.setDefaultAddress(true);
-                newDefault = addr;
-            } else {
-                addr.setDefaultAddress(false);
-            }
-        }
-        return newDefault;
-    }
 }

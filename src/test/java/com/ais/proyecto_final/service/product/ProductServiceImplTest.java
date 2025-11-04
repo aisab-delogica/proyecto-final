@@ -4,6 +4,7 @@ import com.ais.proyecto_final.dto.product.ProductRequestDTO;
 import com.ais.proyecto_final.dto.product.ProductResponseDTO;
 import com.ais.proyecto_final.entity.Product;
 import com.ais.proyecto_final.exceptions.DuplicateResourceException;
+import com.ais.proyecto_final.exceptions.OrderBusinessException;
 import com.ais.proyecto_final.mappers.ProductMapper;
 import com.ais.proyecto_final.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -43,6 +44,8 @@ public class ProductServiceImplTest {
     private ProductResponseDTO productResponseDTO;
     private final Long PRODUCT_ID = 1L;
 
+    private Product testProductStock;
+
     @BeforeEach
     void setUp() {
         productRequestDTO = ProductRequestDTO.builder()
@@ -63,6 +66,15 @@ public class ProductServiceImplTest {
                 .build();
 
         productResponseDTO = ProductResponseDTO.builder()
+                .id(PRODUCT_ID)
+                .sku("SKU001")
+                .name("Test Product")
+                .price(new BigDecimal("100.00"))
+                .stock(5)
+                .active(true)
+                .build();
+
+        testProductStock = Product.builder()
                 .id(PRODUCT_ID)
                 .sku("SKU001")
                 .name("Test Product")
@@ -270,5 +282,67 @@ public class ProductServiceImplTest {
 
         assertTrue(result.isPresent());
         assertEquals(PRODUCT_ID, result.get().getId());
+    }
+
+    @Test
+    void reduceStock_ShouldReduceStockSuccessfully_WhenStockIsSufficient() {
+        int initialStock = testProductStock.getStock();
+        int quantityToReduce = 3;
+
+        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(testProductStock));
+        when(productRepository.save(any(Product.class))).thenReturn(testProductStock);
+
+        productService.reduceStock(PRODUCT_ID, quantityToReduce);
+
+        assertEquals(initialStock - quantityToReduce, testProductStock.getStock());
+        verify(productRepository, times(1)).save(testProductStock);
+    }
+
+    @Test
+    void reduceStock_ShouldThrowOrderBusinessException_WhenStockIsInsufficient() {
+        int quantityToReduce = 10;
+
+        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(testProductStock));
+
+        assertThrows(OrderBusinessException.class, () -> productService.reduceStock(PRODUCT_ID, quantityToReduce));
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    void reduceStock_ShouldThrowOrderBusinessException_WhenProductIsInactive() {
+        testProductStock.setActive(false);
+        int quantityToReduce = 1;
+
+        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(testProductStock));
+
+        assertThrows(OrderBusinessException.class, () -> productService.reduceStock(PRODUCT_ID, quantityToReduce));
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    void reduceStock_ShouldThrowEntityNotFoundException_WhenProductDoesNotExist() {
+        when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> productService.reduceStock(99L, 1));
+    }
+
+    @Test
+    void returnStock_ShouldIncreaseStockSuccessfully() {
+        testProductStock.setStock(5);
+        int quantityToReturn = 8;
+        int expectedStock = 13;
+
+        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(testProductStock));
+        when(productRepository.save(any(Product.class))).thenReturn(testProductStock);
+
+        productService.returnStock(PRODUCT_ID, quantityToReturn);
+
+        assertEquals(expectedStock, testProductStock.getStock());
+        verify(productRepository, times(1)).save(testProductStock);
+    }
+
+    @Test
+    void returnStock_ShouldThrowEntityNotFoundException_WhenProductDoesNotExist() {
+        when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> productService.returnStock(99L, 1));
     }
 }

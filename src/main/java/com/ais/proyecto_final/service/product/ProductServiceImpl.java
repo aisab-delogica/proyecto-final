@@ -69,7 +69,6 @@ public class ProductServiceImpl implements ProductService {
                 });
     }
 
-    //soft delete (logico)
     @Transactional
     public void deleteProductById(Long id) {
         log.info("Dando de baja producto con id: {}", id);
@@ -83,7 +82,6 @@ public class ProductServiceImpl implements ProductService {
         log.info("Producto con id: {} ha sido dado de baja.", id);
     }
 
-    //hard delete (fisico)
     @Transactional
     public void hardDeleteProductById(Long id) {
         log.info("ELIMINANDO producto con ID: {}", id);
@@ -97,7 +95,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-    // put
     @Transactional
     public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto) {
         log.info("Actualizando producto con id: {}", id);
@@ -119,13 +116,37 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toResponseDto(updated);
     }
 
-
-    // orders
-
     @Transactional(readOnly = true)
     @Override
     public Optional<Product> getProductEntityById(Long id) {
         log.info("Buscando producto con ID: {}", id);
         return productRepository.findById(id);
+    }
+
+    @Transactional
+    @Override
+    public void reduceStock(Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Producto " + productId + " no existe."));
+
+        if (!product.isActive()) {
+            throw new OrderBusinessException("El producto '" + product.getName() + "' (ID: " + product.getId() + ") no está activo.");
+        }
+        if (product.getStock() < quantity) {
+            throw new OrderBusinessException("Stock insuficiente para '" + product.getName() + "'. Stock actual: " + product.getStock() + ", Solicitado: " + quantity);
+        }
+
+        product.setStock(product.getStock() - quantity);
+        productRepository.save(product);
+    }
+
+    @Transactional
+    @Override
+    public void returnStock(Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Producto " + productId + " no existe al intentar devolver stock."));
+
+        product.setStock(product.getStock() + quantity);
+        productRepository.save(product);
     }
 }
